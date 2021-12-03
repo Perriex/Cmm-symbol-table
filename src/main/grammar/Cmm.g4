@@ -216,38 +216,77 @@ elseStatement returns [Statement elseStatementRet]:
 
 //todo - done
 loopStatement returns [LoopStmt loopStatementRet]:
-    w = whileLoopStatement {$loopStatementRet = $w.whileLoopStatement; }
+    w = whileLoopStatement {$loopStatementRet = $w.whileLoopStatementRet; }
     |
-    d = doWhileLoopStatement{$loopStatementRet = $d.doWhileLoopStatement;};
+    d = doWhileLoopStatement{$loopStatementRet = $d.doWhileLoopStatementRet;};
 
 //todo - done
-whileLoopStatement :
-    WHILE expression loopCondBody;
+whileLoopStatement returns [LoopStmt whileLoopStatementRet] :
+   ( w = WHILE)
+   {$whileLoopStatementRet = new LoopStmt();
+   int line = $w.getLine();
+   $whileLoopStatementRet.setLine(line);
+   }
+   (e = expression) {$whileLoopStatementRet.setCondition($e.expressionRet);}
+   (l = loopCondBody) {$whileLoopStatementRet.setBody($l.loopCondBodyRet);};
 
-//todo
-doWhileLoopStatement :
-    DO body NEWLINE* WHILE expression;
+//todo - done
+doWhileLoopStatement  returns [LoopStmt doWhileLoopStatementRet] :
+    (d = DO)
+    {$doWhileLoopStatementRet = new LoopStmt();
+    int line = $d.getLine();
+    $doWhileLoopStatementRet.setLine(line);
+    }
+    (b = body) {$doWhileLoopStatementRet.setBody($b.bodyRet);}
+    NEWLINE* WHILE
+    (e = expression) {$doWhileLoopStatementRet.setCondition($e.expressionRet);};
 
-//todo
-displayStatement :
-  DISPLAY LPAR expression RPAR;
+//todo - done
+displayStatement returns [DisplayStmt displayStatementRet]:
+    (d = DISPLAY)
+    LPAR
+    (e = expression)
+    {$displayStatementRet = new DisplayStmt($e.expressionRet);
+    int line = $d.getLine();
+    $displayStatementRet.setLine(line);}
+    RPAR;
 
-//todo
-assignmentStatement :
-    orExpression ASSIGN expression;
+//todo - done
+assignmentStatement returns [AssignmentStmt assignmentStatementRet]:
+    (e1 = orExpression)
+    (a = ASSIGN)
+    (e2 = expression)
+    {$assignmentStatementRet = new AssignmentStmt($e1.orExpressionRet, $e2.expressionRet);
+    int line = $a.getLine();
+    $assignmentStatementRet.setLine(line);};
 
-//todo
+//todo - done
 singleStatement returns [Statement singleStatementRet]:
-    ifStatement | displayStatement | functionCallStmt | returnStatement | assignmentStatement
-    | varDecStatement | loopStatement | append | size;
+    e1 = ifStatement {$singleStatementRet = $e1.ifStatementRet;}|
+    e2 = displayStatement {$singleStatementRet = $e2.displayStatementRet;}|
+    e3 = functionCallStmt {$singleStatementRet = $e3.functionCallStmtRet;}|
+    e4 = returnStatement {$singleStatementRet = $e4.returnStatementRet;}|
+    e5 = assignmentStatement {$singleStatementRet = $e5.assignmentStatementRet;}|
+    e6 = varDecStatement {$singleStatementRet = $e6.varDecStatementRet;}|
+    e7 = loopStatement {$singleStatementRet = $e7.loopStatementRet;} |
+    e8 = append {$singleStatementRet = $e8.appendRet;}|
+    e9 = size {$singleStatementRet = $e9.sizeRet;};
 
-//todo
+//todo - done
 expression returns [Expression expressionRet]:
-    orExpression (op = ASSIGN expression )? ;
+    oe = orExpression
+    {$expressionRet = $oe.orExpressionRet; }
+    (op = ASSIGN e2 = expression
+    {$expressionRet = new BinaryExpression($oe.orExpressionRet,$e2.expressionRet,BinaryOperator.assign);
+    int line = $op.getLine();
+    $expressionRet.setLine(line);})? ;
 
 //todo
+
 orExpression returns [Expression orExpressionRet]:
-    andExpression (op = OR andExpression )*;
+    ae = andExpression
+    {$expressionRet = $ae.orExpressionRet; }
+    (op = OR andExpression )*;
 
 //todo
 andExpression:
@@ -282,11 +321,11 @@ otherExpression returns[Expression otherExpressionRet]:
     value | identifier | LPAR (functionArguments) RPAR | size | append ;
 
 //todo
-size :
+size returns [ListSizeStmt sizeRet]:
     SIZE LPAR expression RPAR;
 
 //todo
-append :
+append returns [ListAppendStmt appendRet]:
     APPEND LPAR expression COMMA expression RPAR;
 
 //todo
