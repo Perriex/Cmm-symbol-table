@@ -14,9 +14,7 @@ public class BlockStmt extends Statement{
     public void setStatements(ArrayList<Statement> statements) {
         this.statements = statements;
     }
-    public void addStatement(Statement statement) {
-        this.statements.add(statement);
-    }
+    public void addStatement(Statement statement) { this.statements.add(statement); }
 
     @Override
     public String toString() {

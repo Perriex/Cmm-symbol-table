@@ -40,8 +40,11 @@ structDeclaration returns[StructDeclaration structDeclarationRet]:
      int line = $s.getLine();
      $structDeclarationRet.setLine(line);})
     (id = identifier {$structDeclarationRet.setStructName($id.identifierRet);})
-    ((BEGIN (b1 = structBody {$structDeclarationRet.setBody($b1.structBodyRet);}) NEWLINE+ END)|
-    (NEWLINE+ (b2 = singleStatementStructBody {$structDeclarationRet.setBody($b2.singleStatementStructBodyRet);}) SEMICOLON?)) NEWLINE+;
+    (
+    (BEGIN (b1 = structBody {$structDeclarationRet.setBody($b1.structBodyRet);}) NEWLINE+ END)
+    |
+    (NEWLINE+ (b2 = singleStatementStructBody {$structDeclarationRet.setBody($b2.singleStatementStructBodyRet);}) SEMICOLON?)
+    ) NEWLINE+;
 
 //todo - done!
 singleVarWithGetAndSet returns[SetGetVarDeclaration setGetVarDeclarationRet]:
@@ -57,7 +60,7 @@ singleVarWithGetAndSet returns[SetGetVarDeclaration setGetVarDeclarationRet]:
     (s = setBody {$setGetVarDeclarationRet.setSetterBody($s.setBodyRet);})
     (g = getBody {$setGetVarDeclarationRet.setGetterBody($g.getBodyRet);}) END;
 
-//todo
+//todo - done
 singleStatementStructBody returns[Statement singleStatementStructBodyRet]:
     (v = varDecStatement
     {$singleStatementStructBodyRet = $v.varDecStatementRet;})
@@ -65,17 +68,24 @@ singleStatementStructBody returns[Statement singleStatementStructBodyRet]:
     (s = singleVarWithGetAndSet
     {$singleStatementStructBodyRet = $s.setGetVarDeclarationRet;});
 
-//todo
-structBody returns[Statement structBodyRet]:
-    (NEWLINE+ (singleStatementStructBody SEMICOLON)* singleStatementStructBody SEMICOLON?)+;
+//todo - done
+structBody returns[BlockStmt structBodyRet]:
+    {$structBodyRet = new BlockStmt();}
+    (NEWLINE+
+    (
+    (s = singleStatementStructBody {$structBodyRet.addStatement($s.singleStatementStructBodyRet);})
+    SEMICOLON
+    )*
+    (si = singleStatementStructBody {$structBodyRet.addStatement($si.singleStatementStructBodyRet);})
+    SEMICOLON?)+;
 
-//todo
+//todo - done
 getBody returns[Statement getBodyRet]:
-    GET body NEWLINE+;
+    GET (b = body {$getBodyRet = $b.bodyRet;}) NEWLINE+;
 
-//todo
+//todo - done
 setBody returns[Statement setBodyRet]:
-    SET body NEWLINE+;
+    SET (b = body {$setBodyRet = $b.bodyRet;}) NEWLINE+;
 
 //todo
 functionDeclaration returns[FunctionDeclaration functionDeclarationRet]:
@@ -204,11 +214,10 @@ boolValue:
 
 //todo - done!
 identifier returns[Identifier identifierRet]:
-    (id = IDENTIFIER
-    {$identifierRet = new Identifier();
-     int line = id.getLine();
+    (i = IDENTIFIER
+    {$identifierRet = new Identifier($i.text);
+     int line = $i.getLine();
      $identifierRet.setLine(line);
-     $identifierRet.setName($id.text);
     });
 
 //todo
