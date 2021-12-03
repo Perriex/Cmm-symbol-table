@@ -25,32 +25,56 @@ program returns[Program programRet]:
     (f = functionDeclaration {$programRet.addFunction($f.functionDeclarationRet);})*
     m = main {$programRet.setMain($m.mainRet);};
 
-//todo
+//todo - done!
 main returns[MainDeclaration mainRet]:
-    MAIN LPAR RPAR body;
+    (m = MAIN
+    {$mainRet = new MainDeclaration();
+     int line = $m.getLine();
+     $mainRet.setLine(line);})
+    LPAR RPAR (b = body {$mainRet.setBody($b.bodyRet);});
 
-//todo
+//todo - done!
 structDeclaration returns[StructDeclaration structDeclarationRet]:
-    STRUCT identifier ((BEGIN structBody NEWLINE+ END) | (NEWLINE+ singleStatementStructBody SEMICOLON?)) NEWLINE+;
+    (s = STRUCT
+    {$structDeclarationRet = new StructDeclaration();
+     int line = $s.getLine();
+     $structDeclarationRet.setLine(line);})
+    (id = identifier {$structDeclarationRet.setStructName($id.identifierRet);})
+    ((BEGIN (b1 = structBody {$structDeclarationRet.setBody($b1.structBodyRet);}) NEWLINE+ END)|
+    (NEWLINE+ (b2 = singleStatementStructBody {$structDeclarationRet.setBody($b2.singleStatementStructBodyRet);}) SEMICOLON?)) NEWLINE+;
+
+//todo - done!
+singleVarWithGetAndSet returns[SetGetVarDeclaration setGetVarDeclarationRet]:
+    (t = type
+    {$setGetVarDeclarationRet = new SetGetVarDeclaration();
+     $setGetVarDeclarationRet.setVarType($t.typeRet);})
+    (id = identifier
+    {$setGetVarDeclarationRet.setVarName($id.identifierRet);
+     int line = $id.identifierRet.getLine();
+     $setGetVarDeclarationRet.setLine(line);})
+    (f = functionArgsDec {$setGetVarDeclarationRet.addArg($f.variableDeclarationRet);})
+    BEGIN NEWLINE+
+    (s = setBody {$setGetVarDeclarationRet.setSetterBody($s.setBodyRet);})
+    (g = getBody {$setGetVarDeclarationRet.setGetterBody($g.getBodyRet);}) END;
 
 //todo
-singleVarWithGetAndSet :
-    type identifier functionArgsDec BEGIN NEWLINE+ setBody getBody END;
+singleStatementStructBody returns[Statement singleStatementStructBodyRet]:
+    (v = varDecStatement
+    {$singleStatementStructBodyRet = $v.varDecStatementRet;})
+    |
+    (s = singleVarWithGetAndSet
+    {$singleStatementStructBodyRet = $s.setGetVarDeclarationRet;});
 
 //todo
-singleStatementStructBody :
-    varDecStatement | singleVarWithGetAndSet;
-
-//todo
-structBody :
+structBody returns[Statement structBodyRet]:
     (NEWLINE+ (singleStatementStructBody SEMICOLON)* singleStatementStructBody SEMICOLON?)+;
 
 //todo
-getBody :
+getBody returns[Statement getBodyRet]:
     GET body NEWLINE+;
 
 //todo
-setBody :
+setBody returns[Statement setBodyRet]:
     SET body NEWLINE+;
 
 //todo
@@ -58,7 +82,7 @@ functionDeclaration returns[FunctionDeclaration functionDeclarationRet]:
     (type | VOID ) identifier functionArgsDec body NEWLINE+;
 
 //todo
-functionArgsDec :
+functionArgsDec returns[VariableDeclaration variableDeclarationRet]:
     LPAR (type identifier (COMMA type identifier)*)? RPAR ;
 
 //todo
@@ -66,7 +90,7 @@ functionArguments :
     (expression (COMMA expression)*)?;
 
 //todo
-body :
+body returns[Statement bodyRet]:
      (blockStatement | (NEWLINE+ singleStatement (SEMICOLON)?));
 
 //todo
@@ -78,7 +102,7 @@ blockStatement :
     BEGIN (NEWLINE+ (singleStatement SEMICOLON)* singleStatement (SEMICOLON)?)+ NEWLINE+ END;
 
 //todo
-varDecStatement :
+varDecStatement returns[VarDecStmt varDecStatementRet]:
     type identifier (ASSIGN orExpression )? (COMMA identifier (ASSIGN orExpression)? )*;
 
 //todo
@@ -178,12 +202,17 @@ value :
 boolValue:
     TRUE | FALSE;
 
-//todo
-identifier:
-    IDENTIFIER;
+//todo - done!
+identifier returns[Identifier identifierRet]:
+    (id = IDENTIFIER
+    {$identifierRet = new Identifier();
+     int line = id.getLine();
+     $identifierRet.setLine(line);
+     $identifierRet.setName($id.text);
+    });
 
 //todo
-type:
+type returns[Type typeRet]:
     INT | BOOL | LIST SHARP type | STRUCT identifier | fptrType;
 
 //todo
