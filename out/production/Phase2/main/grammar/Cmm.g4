@@ -41,7 +41,15 @@ structDeclaration returns[StructDeclaration structDeclarationRet]:
      $structDeclarationRet.setLine(line);})
     (id = identifier {$structDeclarationRet.setStructName($id.identifierRet);})
     (
-    (BEGIN (b1 = structBody {$structDeclarationRet.setBody($b1.structBodyRet);}) NEWLINE+ END)
+    (
+    (b = BEGIN
+    (b1 = structBody // maybe??? with line
+    {$structDeclarationRet.setBody($b1.structBodyRet);
+    int line = $b.getLine();
+    $b1.structBodyRet.setLine(line);}
+    )
+    )
+     NEWLINE+ END)
     |
     (NEWLINE+ (b2 = singleStatementStructBody {$structDeclarationRet.setBody($b2.singleStatementStructBodyRet);}) SEMICOLON?)
     ) NEWLINE+;
@@ -55,7 +63,7 @@ singleVarWithGetAndSet returns[SetGetVarDeclaration setGetVarDeclarationRet]:
     {$setGetVarDeclarationRet.setVarName($id.identifierRet);
      int line = $id.identifierRet.getLine();
      $setGetVarDeclarationRet.setLine(line);})
-    (f = functionArgsDec {$setGetVarDeclarationRet.addArg($f.variableDeclarationRet);})
+    (f = functionArgsDec {$setGetVarDeclarationRet.setArgs($f.variableDeclarationRet.getVars());}) // here
     BEGIN NEWLINE+
     (s = setBody {$setGetVarDeclarationRet.setSetterBody($s.setBodyRet);})
     (g = getBody {$setGetVarDeclarationRet.setGetterBody($g.getBodyRet);}) END;
@@ -79,57 +87,132 @@ structBody returns[BlockStmt structBodyRet]:
     (si = singleStatementStructBody {$structBodyRet.addStatement($si.singleStatementStructBodyRet);})
     SEMICOLON?)+;
 
-//todo
+//todo - done
 getBody returns[Statement getBodyRet]:
     GET (b = body {$getBodyRet = $b.bodyRet;}) NEWLINE+;
 
-//todo
+//todo - done
 setBody returns[Statement setBodyRet]:
     SET (b = body {$setBodyRet = $b.bodyRet;}) NEWLINE+;
 
-//todo
+//todo - done
 functionDeclaration returns[FunctionDeclaration functionDeclarationRet]:
-    (type | VOID ) identifier functionArgsDec body NEWLINE+;
+    {$functionDeclarationRet = new FunctionDeclaration();}
+    (
+    (t = type {$functionDeclarationRet.setReturnType($t.typeRet);})
+    |
+    VOID
+    )
+    (id = identifier
+    {$functionDeclarationRet.setFunctionName($id.identifierRet);
+    int line = $id.identifierRet.getLine();
+    $functionDeclarationRet.setLine(line);
+    })
+    (f = functionArgsDec {$functionDeclarationRet.setArgs($f.variableDeclarationRet.getVars());}) //change to array
+    (b = body {$functionDeclarationRet.setBody($b.bodyRet);})
+    NEWLINE+;
 
-//todo
-functionArgsDec returns[VariableDeclaration variableDeclarationRet]:
-    LPAR (type identifier (COMMA type identifier)*)? RPAR ;
+//todo - not sure -> must change to array
+functionArgsDec returns[VarDecStmt variableDeclarationRet]:
+    {$variableDeclarationRet = new VarDecStmt();}
+    LPAR (
+    (t = type )
+    (id = identifier )
+    {VariableDeclaration arg1 = new VariableDeclaration($id.identifierRet,$t.typeRet);
+    $variableDeclarationRet.addVar(arg1);}
+    (COMMA
+    (t = type )
+    (id = identifier )
+    {VariableDeclaration arg = new VariableDeclaration($id.identifierRet,$t.typeRet);
+    $variableDeclarationRet.addVar(arg);}
+    )*
+    )? RPAR ;
 
-//todo
-functionArguments :
+//todo - ?? challenge AND return is not corrent -> array
+functionArguments returns[ArrayList<Expression> functionArgumentsRet]:
     (expression (COMMA expression)*)?;
 
-//todo
+//todo - done
 body returns[Statement bodyRet]:
-     (blockStatement | (NEWLINE+ singleStatement (SEMICOLON)?));
+     (
+     (b = blockStatement {$bodyRet = $b.blockStatementRet;})
+     |
+     (NEWLINE+ (s = singleStatement {$bodyRet = $s.singleStatementRet;})
+     (SEMICOLON)?));
 
-//todo
-loopCondBody :
-     (blockStatement | (NEWLINE+ singleStatement ));
+//todo - done
+loopCondBody returns[Statement loopCondBodyRet]:
+     ((b = blockStatement {$loopCondBodyRet = $b.blockStatementRet;})
+     |
+     (NEWLINE+ (s = singleStatement {$loopCondBodyRet = $s.singleStatementRet;}) ));
 
-//todo
-blockStatement :
-    BEGIN (NEWLINE+ (singleStatement SEMICOLON)* singleStatement (SEMICOLON)?)+ NEWLINE+ END;
+//todo - done
+blockStatement returns[BlockStmt blockStatementRet] :
+    {$blockStatementRet = new BlockStmt();}
+    (b = BEGIN
+    {int line = $b.getLine();
+    $blockStatementRet.setLine(line);} )
+    (NEWLINE+
+    ((s = singleStatement {$blockStatementRet.addStatement($s.singleStatementRet);}) SEMICOLON)*
+    (s1 = singleStatement {$blockStatementRet.addStatement($s1.singleStatementRet);}) (SEMICOLON)?)+
+    NEWLINE+ END;
 
-//todo
+//todo - done
 varDecStatement returns[VarDecStmt varDecStatementRet]:
-    type identifier (ASSIGN orExpression )? (COMMA identifier (ASSIGN orExpression)? )*;
+    {$varDecStatementRet = new VarDecStmt();}
+    t = type id = identifier
+    {VariableDeclaration var = new VariableDeclaration($id.identifierRet,$t.typeRet);
+    int line = $id.identifierRet.getLine();
+    $varDecStatementRet.setLine(line);}
+    (ASSIGN e = orExpression )?
+    {var.setDefaultValue($e.orExpressionRet);
+    $varDecStatementRet.addVar(var);}
+    (COMMA
+    id2 = identifier  {VariableDeclaration var2 = new VariableDeclaration($id2.identifierRet,$t.typeRet);}
+    (ASSIGN e2 = orExpression)?
+    {var2.setDefaultValue($e2.orExpressionRet);
+    $varDecStatementRet.addVar(var2);}
+    )*;
+
+//todo - just funtion that called?or this is wrong????- done
+functionCallStmt returns [FunctionCallStmt functionCallStmtRet] :
+    e = otherExpression {FunctionCall funcCall = new FunctionCall($e.otherExpressionRet);}
+    (( LPAR  functionArguments RPAR) | (DOT identifier))* //??
+    (l = LPAR fa = functionArguments
+    {funcCall.setArgs($fa.functionArgumentsRet);
+    int line =$l.getLine();
+    funcCall.setLine(line);}
+    RPAR)
+    {$functionCallStmtRet = new FunctionCallStmt(funcCall);
+    int line =$l.getLine();
+    $functionCallStmtRet.setLine(line);};
+
+//todo - done
+returnStatement returns [ReturnStmt returnStatementRet]:
+    r = RETURN
+    {$returnStatementRet = new ReturnStmt();
+     int line = $r.getLine();
+     $returnStatementRet.setLine(line);}
+    (e = expression {$returnStatementRet.setReturnedExpr($e.expressionRet);})?;
 
 //todo
-functionCallStmt :
-     otherExpression ((LPAR functionArguments RPAR) | (DOT identifier))* (LPAR functionArguments RPAR);
+ifStatement returns [ConditionalStmt ifStatementRet]:
+    i = IF e = expression
+    {$ifStatementRet = new ConditionalStmt($e.expressionRet);
+    int line = $i.getLine();
+    $ifStatementRet.setLine(line);}
+    (
+    (l = loopCondBody
+    {$ifStatementRet.setThenBody($l.loopCondBodyRet);})
+    |
+    ((b = body) (el = elseStatement)
+    {$ifStatementRet.setThenBody($b.bodyRet);
+    $ifStatementRet.setElseBody($el.elseStatementRet);})
+    );
 
 //todo
-returnStatement :
-    RETURN (expression)?;
-
-//todo
-ifStatement :
-    IF expression (loopCondBody | body elseStatement);
-
-//todo
-elseStatement :
-     NEWLINE* ELSE loopCondBody;
+elseStatement returns [Statement elseStatementRet]:
+     NEWLINE* ELSE l = loopCondBody {$elseStatementRet = $l.loopCondBodyRet; };
 
 //todo
 loopStatement :
@@ -152,16 +235,16 @@ assignmentStatement :
     orExpression ASSIGN expression;
 
 //todo
-singleStatement :
+singleStatement returns [Statement singleStatementRet]:
     ifStatement | displayStatement | functionCallStmt | returnStatement | assignmentStatement
     | varDecStatement | loopStatement | append | size;
 
 //todo
-expression:
+expression returns [Expression expressionRet]:
     orExpression (op = ASSIGN expression )? ;
 
 //todo
-orExpression:
+orExpression returns [Expression orExpressionRet]:
     andExpression (op = OR andExpression )*;
 
 //todo
@@ -193,7 +276,7 @@ accessExpression:
     otherExpression ((LPAR functionArguments RPAR) | (DOT identifier))*  ((LBRACK expression RBRACK) | (DOT identifier))*;
 
 //todo
-otherExpression:
+otherExpression returns[Expression otherExpressionRet]:
     value | identifier | LPAR (functionArguments) RPAR | size | append ;
 
 //todo
