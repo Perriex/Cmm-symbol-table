@@ -281,62 +281,75 @@ expression returns [Expression expressionRet]:
     int line = $op.getLine();
     $expressionRet.setLine(line);})? ;
 
-//todo
+//todo ?
 
 orExpression returns [Expression orExpressionRet]:
-    ae = andExpression
-    {$expressionRet = $ae.orExpressionRet; }
-    (op = OR andExpression )*;
+    ae = andExpression (op = OR andExpression )*;
 
-//todo
+//todo ?
 andExpression:
     equalityExpression (op = AND equalityExpression )*;
 
-//todo
+//todo ?
 equalityExpression:
     relationalExpression (op = EQUAL relationalExpression )*;
 
-//todo
+//todo ?
 relationalExpression:
     additiveExpression ((op = GREATER_THAN | op = LESS_THAN) additiveExpression )*;
 
-//todo
+//todo ?
 additiveExpression:
     multiplicativeExpression ((op = PLUS | op = MINUS) multiplicativeExpression )*;
 
-//todo
+//todo ?
 multiplicativeExpression:
     preUnaryExpression ((op = MULT | op = DIVIDE) preUnaryExpression )*;
 
-//todo
+//todo ?
 preUnaryExpression:
     ((op = NOT | op = MINUS) preUnaryExpression ) | accessExpression;
 
-//todo
+//todo ?
 accessExpression:
     otherExpression ((LPAR functionArguments RPAR) | (DOT identifier))*  ((LBRACK expression RBRACK) | (DOT identifier))*;
 
 //todo
 otherExpression returns[Expression otherExpressionRet]:
-    value | identifier | LPAR (functionArguments) RPAR | size | append ;
+    e1 = value {$otherExpressionRet = $e1.valueRet;}|
+    e2 = identifier {$otherExpressionRet = $e2.identifierRet;}|
+    LPAR (e3 = functionArguments) {} RPAR  | // remain
+    e4 = size  {}| // must be statment
+    e5 = append  {} ;  // must be statment
 
 //todo
 size returns [ListSizeStmt sizeRet]:
-    SIZE LPAR expression RPAR;
+    s = SIZE LPAR e = expression RPAR;
 
 //todo
 append returns [ListAppendStmt appendRet]:
-    APPEND LPAR expression COMMA expression RPAR;
+    a = APPEND LPAR e1 = expression COMMA e2 = expression RPAR;
 
-//todo
-value :
-    boolValue | INT_VALUE;
+//todo - check??
+value returns [Value valueRet]:
+    b = boolValue {$valueRet = $b.boolValueRet;}|
+    i = INT_VALUE
+    {$valueRet = new IntValue(Integer.parseInt($i.text));
+    int line = $i.getLine();
+    $valueRet.setLine(line);};
 
-//todo
-boolValue:
-    TRUE | FALSE;
+//todo - done
+boolValue returns [BoolValue boolValueRet]:
+    t = TRUE
+    {$boolValueRet = new BoolValue(true);
+    int line = $t.getLine();
+    $boolValueRet.setLine(line);}|
+    f = FALSE
+    {$boolValueRet = new BoolValue(false);
+    int line = $f.getLine();
+    $boolValueRet.setLine(line);};
 
-//todo - done!
+//todo - done
 identifier returns[Identifier identifierRet]:
     (i = IDENTIFIER
     {$identifierRet = new Identifier($i.text);
@@ -346,10 +359,13 @@ identifier returns[Identifier identifierRet]:
 
 //todo
 type returns[Type typeRet]:
-    INT | BOOL | LIST SHARP type | STRUCT identifier | fptrType;
+    INT {$typeRet = new IntType();} | BOOL {$typeRet = new BoolType();}|
+    LIST SHARP t = type {$typeRet = new ListType($t.typeRet);} |
+    STRUCT id = identifier {$typeRet = new StructType($id.identifierRet);}|
+    f = fptrType {$typeRet = $f.fptrTypeRet;};
 
 //todo
-fptrType:
+fptrType returns [FptrType fptrTypeRet]:
     FPTR LESS_THAN (VOID | (type (COMMA type)*)) ARROW (type | VOID) GREATER_THAN;
 
 MAIN: 'main';
