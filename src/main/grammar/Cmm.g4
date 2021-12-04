@@ -282,7 +282,6 @@ expression returns [Expression expressionRet]:
     $expressionRet.setLine(line);})? ;
 
 //todo ?
-
 orExpression returns [Expression orExpressionRet]:
     ae = andExpression (op = OR andExpression )*;
 
@@ -322,13 +321,25 @@ otherExpression returns[Expression otherExpressionRet]:
     e4 = size  {}| // must be statment
     e5 = append  {} ;  // must be statment
 
-//todo
+//todo - done
 size returns [ListSizeStmt sizeRet]:
-    s = SIZE LPAR e = expression RPAR;
+    s = SIZE LPAR (e = expression)
+    {ListSize size =new  ListSize($e.expressionRet);
+    int line = $s.getLine();
+    size.setLine(line);
+    $sizeRet = new ListSizeStmt(size);
+    $sizeRet.setLine(line);}
+    RPAR;
 
 //todo
 append returns [ListAppendStmt appendRet]:
-    a = APPEND LPAR e1 = expression COMMA e2 = expression RPAR;
+    a = APPEND LPAR e1 = expression COMMA e2 = expression
+    {ListAppend app = new ListAppend($e1.expressionRet, $e2.expressionRet);
+    int line = $a.getLine();
+    app.setLine(line);
+    $appendRet = new ListAppendStmt(app);
+    $appendRet.setLine(line);}
+    RPAR;
 
 //todo - check??
 value returns [Value valueRet]:
