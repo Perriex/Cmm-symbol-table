@@ -21,7 +21,7 @@ program returns[Program programRet]:
     {$programRet = new Program();
      int line = 1;
      $programRet.setLine(line);}
-    (s = structDeclaration {$programRet.addStruct($s.structDeclarationRet);})*
+    (s = structDeclaration {$programRet.addStruct($s.structDeclarationRet); })*
     (f = functionDeclaration {$programRet.addFunction($f.functionDeclarationRet);})*
      m = main {$programRet.setMain($m.mainRet);};
 

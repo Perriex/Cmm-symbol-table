@@ -9,9 +9,7 @@ import main.ast.nodes.statement.*;
 import main.visitor.*;
 
 public class ASTTreePrinter extends Visitor<Void> {
-    public void messagePrinter(int line, String message){
-        System.out.println("Line " + line + ": " + message);
-    }
+    public void messagePrinter(int line, String message){ System.out.println("Line " + line + ": " + message); }
 
     @Override
     public Void visit(Program program) {
