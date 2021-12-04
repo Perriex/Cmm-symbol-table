@@ -27,42 +27,67 @@ public class ASTTreePrinter extends Visitor<Void> {
     @Override
     public Void visit(FunctionDeclaration functionDec) {
         //todo
+        messagePrinter(functionDec.getLine(), functionDec.toString());
+        functionDec.getFunctionName().accept(this);
+        for (VariableDeclaration variableDeclaration: functionDec.getArgs())
+            variableDeclaration.accept(this);
+        functionDec.getBody().accept(this);
         return null;
     }
 
     @Override
     public Void visit(MainDeclaration mainDec) {
         //todo
+        messagePrinter(mainDec.getLine(), mainDec.toString());
+        mainDec.getBody().accept(this);
         return null;
     }
 
     @Override
     public Void visit(VariableDeclaration variableDec) {
         //todo
+        messagePrinter(variableDec.getLine(), variableDec.toString());
+        variableDec.getVarName().accept(this);
+        variableDec.getDefaultValue().accept(this);
         return null;
     }
 
     @Override
     public Void visit(StructDeclaration structDec) {
         //todo
+        messagePrinter(structDec.getLine(), structDec.toString());
+        structDec.getStructName().accept(this);
+        structDec.getBody().accept(this);
         return null;
     }
 
     @Override
     public Void visit(SetGetVarDeclaration setGetVarDec) {
         //todo
+        messagePrinter(setGetVarDec.getLine(), setGetVarDec.toString());
+        setGetVarDec.getVarName().accept(this);
+        for (VariableDeclaration variableDeclaration: setGetVarDec.getArgs())
+            variableDeclaration.accept(this);
+        setGetVarDec.getSetterBody().accept(this);
+        setGetVarDec.getGetterBody().accept(this);
         return null;
     }
 
     @Override
     public Void visit(AssignmentStmt assignmentStmt) {
         //todo
+        messagePrinter(assignmentStmt.getLine(), assignmentStmt.toString());
+        assignmentStmt.getLValue().accept(this);
+        assignmentStmt.getRValue().accept(this);
         return null;
     }
 
     @Override
     public Void visit(BlockStmt blockStmt) {
         //todo
+        messagePrinter(blockStmt.getLine(), blockStmt.toString());
+        for(Statement statement:blockStmt.getStatements())
+            statement.accept(this);
         return null;
     }
 
