@@ -6,6 +6,7 @@ import main.ast.nodes.declaration.MainDeclaration;
 import main.ast.nodes.declaration.VariableDeclaration;
 import main.ast.nodes.declaration.struct.StructDeclaration;
 import main.ast.nodes.expression.FunctionCall;
+import main.ast.nodes.expression.Identifier;
 import main.ast.nodes.statement.*;
 import main.compileError.CompileError;
 import main.compileError.nameError.*;
@@ -95,7 +96,16 @@ public class ErrorVisitor extends Visitor<Void> {
     public Void visit(MainDeclaration mainDeclaration) {
         var functionDeclaration = new FunctionDeclaration();
         functionDeclaration.setBody(mainDeclaration.getBody());
-        return super.visit(functionDeclaration);
+        functionDeclaration.setFunctionName(new Identifier("main"));
+        return visit(functionDeclaration);
+    }
+
+    @Override
+    public Void visit(VarDecStmt varDecStmt) {
+        for (VariableDeclaration var : varDecStmt.getVars()) {
+            var.accept(this);
+        }
+        return super.visit(varDecStmt);
     }
 
     @Override
@@ -113,9 +123,14 @@ public class ErrorVisitor extends Visitor<Void> {
         }
 
         try {
+            SymbolTable.top.getItem(varItem.getKey());
+            errorPrinter(new DuplicateVar(variableDeclaration.getLine(), varItem.getName()));
+        } catch (ItemNotFoundException ignored) {
+        }
+
+        try {
             SymbolTable.top.put(varItem);
         } catch (ItemAlreadyExistsException ignored) {
-            errorPrinter(new DuplicateVar(variableDeclaration.getLine(), varItem.getName()));
         }
 
         return super.visit(variableDeclaration);
