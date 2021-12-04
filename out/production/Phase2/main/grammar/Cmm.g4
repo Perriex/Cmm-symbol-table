@@ -264,7 +264,7 @@ singleStatement returns [Statement singleStatementRet]:
     e8 = append {$singleStatementRet = new ListAppendStmt($e8.appendRet);}|
     e9 = size {$singleStatementRet = new ListSizeStmt($e9.sizeRet);};
 
-//todo - done
+//todo - done ?
 expression returns [Expression expressionRet]:
     oe = orExpression
     {$expressionRet = $oe.orExpressionRet; }
@@ -273,43 +273,43 @@ expression returns [Expression expressionRet]:
     int line = $op.getLine();
     $expressionRet.setLine(line);})? ;
 
-//todo -
+//todo - done?
 orExpression returns [Expression orExpressionRet]:
     ae = andExpression
     {$orExpressionRet = $ae.andExpressionRet;}
     (op = OR ae = andExpression {$orExpressionRet = new BinaryExpression($orExpressionRet, $ae.andExpressionRet, BinaryOperator.or);})*;
 
-//todo -
+//todo - done?
 andExpression returns [Expression andExpressionRet]:
     ee = equalityExpression
     {$andExpressionRet = $ee.equalityExpressionRet;}
     (op = AND ee = equalityExpression {$andExpressionRet = new BinaryExpression($andExpressionRet, $ee.equalityExpressionRet, BinaryOperator.and);})*;
 
-//todo -
+//todo - done?
 equalityExpression returns [Expression equalityExpressionRet]:
     re = relationalExpression
     {$equalityExpressionRet = $re.relationalExpressionRet;}
     (op = EQUAL re = relationalExpression {$equalityExpressionRet = new BinaryExpression($equalityExpressionRet, $re.relationalExpressionRet, BinaryOperator.eq);})*;
 
-//todo -
+//todo - done?
 relationalExpression returns [Expression relationalExpressionRet]:
     ae = additiveExpression
     {$relationalExpressionRet = $ae.additiveExpressionRet;}
     ((op = GREATER_THAN | op = LESS_THAN) ae = additiveExpression {$relationalExpressionRet = new BinaryExpression($relationalExpressionRet, $ae.additiveExpressionRet, $op.text == "<" ? BinaryOperator.lt : BinaryOperator.gt);})*;
 
-//todo -
+//todo - done?
 additiveExpression returns [Expression additiveExpressionRet]:
     me = multiplicativeExpression
     {$additiveExpressionRet = $me.multiplicativeExpressionRet;}
     ((op = PLUS | op = MINUS) me = multiplicativeExpression {$additiveExpressionRet = new BinaryExpression($additiveExpressionRet, $me.multiplicativeExpressionRet, $op.text == "+" ? BinaryOperator.add : BinaryOperator.sub);})*;
 
-//todo -
+//todo - done?
 multiplicativeExpression returns [Expression multiplicativeExpressionRet]:
     pu = preUnaryExpression
     {$multiplicativeExpressionRet = $pu.preUnaryExpressionRet;}
     ((op = MULT | op = DIVIDE) pu = preUnaryExpression {$multiplicativeExpressionRet = new BinaryExpression($multiplicativeExpressionRet, $pu.preUnaryExpressionRet, $op.text == "*" ? BinaryOperator.mult : BinaryOperator.div);})*;
 
-//todo -
+//todo - done?
 preUnaryExpression returns [Expression preUnaryExpressionRet]:
     ((op = NOT | op = MINUS) pe = preUnaryExpression )
     {$preUnaryExpressionRet = new UnaryExpression($pe.preUnaryExpressionRet, $op.text == "-" ? UnaryOperator.minus : UnaryOperator.not);}
@@ -379,9 +379,16 @@ type returns[Type typeRet]:
     STRUCT id = identifier {$typeRet = new StructType($id.identifierRet);}|
     f = fptrType {$typeRet = $f.fptrTypeRet;};
 
-//todo
+//todo ?
 fptrType returns [FptrType fptrTypeRet]:
-    FPTR LESS_THAN (t = VOID | ( type (COMMA type)*)) ARROW (type | VOID)
+    FPTR LESS_THAN (t = VOID
+    {$fptrTypeRet = new FptrType(new ArrayList<Type>(),new VoidType());
+     $fptrTypeRet.addArgType(new VoidType());}
+    |
+    ( (e = type)
+    {$fptrTypeRet = new FptrType(new ArrayList<Type>(),new VoidType());
+     $fptrTypeRet.addArgType($e.typeRet);}
+    (COMMA t2 = type { $fptrTypeRet.addArgType($t2.typeRet);})*)) ARROW ( t3 = type { $fptrTypeRet.setReturnType($t3.typeRet);} | VOID)
     {}
     GREATER_THAN;
 
