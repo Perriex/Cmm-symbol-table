@@ -1,5 +1,6 @@
 package main;
 
+import main.visitor.error.ErrorVisitor;
 import main.visitor.name.ASTTreePrinter;
 import main.grammar.*;
 import main.ast.nodes.Program;
@@ -14,7 +15,12 @@ public class CmmCompiler {
 
         Program program = cmmParser.cmm().cmmProgram;
 
-        ASTTreePrinter printer = new ASTTreePrinter();
-        program.accept(printer);
+        ErrorVisitor errorVisitor = new ErrorVisitor();
+        program.accept(errorVisitor);
+
+        if (errorVisitor.NoError) {
+            ASTTreePrinter printer = new ASTTreePrinter();
+            program.accept(printer);
+        }
     }
 }
