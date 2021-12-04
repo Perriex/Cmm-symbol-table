@@ -9,15 +9,15 @@ import main.ast.nodes.expression.*;
 import main.ast.nodes.expression.values.primitive.BoolValue;
 import main.ast.nodes.expression.values.primitive.IntValue;
 import main.ast.nodes.statement.*;
+import main.ast.types.Type;
 import main.compileError.CompileError;
-import main.compileError.nameError.DuplicateFunction;
-import main.compileError.nameError.DuplicateStruct;
-import main.compileError.nameError.FunctionStructConflict;
+import main.compileError.nameError.*;
 import main.symbolTable.SymbolTable;
 import main.symbolTable.exceptions.ItemAlreadyExistsException;
 import main.symbolTable.exceptions.ItemNotFoundException;
 import main.symbolTable.items.FunctionSymbolTableItem;
 import main.symbolTable.items.StructSymbolTableItem;
+import main.symbolTable.items.VariableSymbolTableItem;
 import main.visitor.Visitor;
 
 import java.util.UUID;
@@ -116,11 +116,29 @@ public class ErrorVisitor extends Visitor<Void> {
 
     @Override
     public Void visit(StructDeclaration structDeclaration) {
+        structDeclaration.getBody().accept(this);
+        //loop
         return super.visit(structDeclaration);
     }
 
     @Override
     public Void visit(SetGetVarDeclaration setGetVarDeclaration) {
+        var item = new VariableSymbolTableItem(setGetVarDeclaration.getVarName());
+        item.setType(setGetVarDeclaration.getVarType());
+        try {
+            SymbolTable.root.getItem(StructSymbolTableItem.START_KEY + setGetVarDeclaration.getVarName().getName());
+            errorPrinter(new VarStructConflict(setGetVarDeclaration.getLine(), setGetVarDeclaration.getVarName().getName()));
+        } catch (ItemNotFoundException ignored) {}
+
+        try {
+            SymbolTable.top.put(item);
+        } catch (ItemAlreadyExistsException ex) {
+            errorPrinter(new DuplicateVar(setGetVarDeclaration.getLine(), setGetVarDeclaration.getVarName().getName()));
+        }
+        for(VariableDeclaration var: setGetVarDeclaration.getArgs())
+            var.accept(this);
+        setGetVarDeclaration.getSetterBody().accept(this);
+        setGetVarDeclaration.getGetterBody().accept(this);
         return super.visit(setGetVarDeclaration);
     }
 
