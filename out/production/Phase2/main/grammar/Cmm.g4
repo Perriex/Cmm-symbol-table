@@ -261,8 +261,10 @@ singleStatement returns [Statement singleStatementRet]:
     e5 = assignmentStatement {$singleStatementRet = $e5.assignmentStatementRet;}|
     e6 = varDecStatement {$singleStatementRet = $e6.varDecStatementRet;}|
     e7 = loopStatement {$singleStatementRet = $e7.loopStatementRet;} |
-    e8 = append {$singleStatementRet = new ListAppendStmt($e8.appendRet);}|
-    e9 = size {$singleStatementRet = new ListSizeStmt($e9.sizeRet);};
+    e8 = append {$singleStatementRet = new ListAppendStmt($e8.appendRet);
+                 $singleStatementRet.setLine($e8.appendRet.getLine());}|
+    e9 = size {$singleStatementRet = new ListSizeStmt($e9.sizeRet);
+                $singleStatementRet.setLine($e9.sizeRet.getLine());};
 
 //todo - done ?
 expression returns [Expression expressionRet]:
@@ -379,7 +381,7 @@ type returns[Type typeRet]:
     STRUCT id = identifier {$typeRet = new StructType($id.identifierRet);}|
     f = fptrType {$typeRet = $f.fptrTypeRet;};
 
-//todo ?
+//todo - done
 fptrType returns [FptrType fptrTypeRet]:
     FPTR LESS_THAN (t = VOID
     {$fptrTypeRet = new FptrType(new ArrayList<Type>(),new VoidType());

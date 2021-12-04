@@ -2604,6 +2604,7 @@ public class CmmParser extends Parser {
 				setState(488);
 				((SingleStatementContext)_localctx).e8 = append();
 				((SingleStatementContext)_localctx).singleStatementRet =  new ListAppendStmt(((SingleStatementContext)_localctx).e8.appendRet);
+				                 _localctx.singleStatementRet.setLine(((SingleStatementContext)_localctx).e8.appendRet.getLine());
 				}
 				break;
 			case 9:
@@ -2612,6 +2613,7 @@ public class CmmParser extends Parser {
 				setState(491);
 				((SingleStatementContext)_localctx).e9 = size();
 				((SingleStatementContext)_localctx).singleStatementRet =  new ListSizeStmt(((SingleStatementContext)_localctx).e9.sizeRet);
+				                _localctx.singleStatementRet.setLine(((SingleStatementContext)_localctx).e9.sizeRet.getLine());
 				}
 				break;
 			}
