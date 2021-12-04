@@ -165,14 +165,12 @@ varDecStatement returns[VarDecStmt varDecStatementRet]:
     {VariableDeclaration var = new VariableDeclaration($id.identifierRet,$t.typeRet);
     int line = $id.identifierRet.getLine();
     $varDecStatementRet.setLine(line);}
-    (ASSIGN e = orExpression )?
-    {var.setDefaultValue($e.orExpressionRet);
-    $varDecStatementRet.addVar(var);}
+    (ASSIGN e = orExpression {var.setDefaultValue($e.orExpressionRet);
+                                 $varDecStatementRet.addVar(var);})?
     (COMMA
     id2 = identifier  {VariableDeclaration var2 = new VariableDeclaration($id2.identifierRet,$t.typeRet);}
-    (ASSIGN e2 = orExpression)?
-    {var2.setDefaultValue($e2.orExpressionRet);
-    $varDecStatementRet.addVar(var2);}
+    (ASSIGN e2 = orExpression {var2.setDefaultValue($e2.orExpressionRet);
+                                  $varDecStatementRet.addVar(var2);})?
     )*;
 
 //todo ?
@@ -181,7 +179,7 @@ functionCallStmt returns [FunctionCallStmt functionCallStmtRet] :
     {Expression instanceExpression = $oe.otherExpressionRet;}
     (( LPAR  fa=functionArguments RPAR {instanceExpression = new FunctionCall(instanceExpression, $fa.functionArgumentsRet);})
         | (DOT id = identifier {instanceExpression = new StructAccess(instanceExpression, $id.identifierRet);}))*
-    (l = LPAR fa = functionArguments RPAR {$functionCallStmtRet = new FunctionCall(instanceExpression, $fa.functionArgumentsRet);});
+    (l = LPAR fa = functionArguments RPAR {$functionCallStmtRet = new FunctionCallStmt(new FunctionCall(instanceExpression, $fa.functionArgumentsRet));});
 
 //todo - done
 returnStatement returns [ReturnStmt returnStatementRet]:
