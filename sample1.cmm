@@ -1,37 +1,33 @@
-struct st begin
-    int a, b;
-    bool a (int arg1, int arg1) begin
-        set begin
-            int b;
-            a = b;
-        end
+struct s1 begin
+    int a, b = 2;
+    int c (bool arg1, bool arg2) begin
+        set
+            if arg1 & a > b
+                a = a - b
+             else
+                a = a + b
         get
-            return a
+            return a * b + a
+    end; int d () begin
+    set
+    return 2
+    get
+    return 4
     end
 end
 
-struct st begin
-    int a;
-    list #int a
-end
-
-void st(int a, bool a, int b) begin
-    int b, c;
-    if true begin
-        int c = 10
-        int t = 4
-    end
-    else
-        int t = 3
+void f1(list #int myList) begin
+    int i = 0
+    do begin
+        display(myList[i])
+        i = i + 1
+    end while(i < size(myList))
 end
 
 main() begin
-    bool st
-    int i = 0
-    while i < sz begin
-        int newVar
-        while j < i
-            int newVar = 4
-    end
-    int newVar = 10
+    list #int temp
+    int a = 9
+    append(temp, 1)
+    append(temp, 2 / a)
+    f1(temp)
 end
