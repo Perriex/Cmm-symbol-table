@@ -178,10 +178,10 @@ varDecStatement returns[VarDecStmt varDecStatementRet]:
 //todo ?
 functionCallStmt returns [FunctionCallStmt functionCallStmtRet] :
     oe = otherExpression
-    {$functionCallStmtRet = $oe.otherExpressionRet}
-    (( LPAR  fa=functionArguments RPAR {$functionCallStmtRet = new FunctionCall($functionCallStmtRet, $fa.functionArgumentsRet);})
-        | (DOT id = identifier {$functionCallStmtRet = new StructAccess($functionCallStmtRet, $id.identifierRet);}))*
-    (l = LPAR fa = functionArguments RPAR {$functionCallStmtRet = new FunctionCall($functionCallStmtRet, $fa.functionArgumentsRet);});
+    {Expression instanceExpression = $oe.otherExpressionRet;}
+    (( LPAR  fa=functionArguments RPAR {instanceExpression = new FunctionCall(instanceExpression, $fa.functionArgumentsRet);})
+        | (DOT id = identifier {instanceExpression = new StructAccess(instanceExpression, $id.identifierRet);}))*
+    (l = LPAR fa = functionArguments RPAR {$functionCallStmtRet = new FunctionCall(instanceExpression, $fa.functionArgumentsRet);});
 
 //todo - done
 returnStatement returns [ReturnStmt returnStatementRet]:
@@ -337,7 +337,7 @@ preUnaryExpression returns [Expression preUnaryExpressionRet]:
 //todo ?
 accessExpression returns [Expression accessExpressionRet]:
     oe = otherExpression
-    {$accessExpressionRet = $oe.otherExpressionRet}
+    {$accessExpressionRet = $oe.otherExpressionRet;}
     ((LPAR fa = functionArguments RPAR {$accessExpressionRet = new FunctionCall($accessExpressionRet, $fa.functionArgumentsRet);})
         | (DOT id=identifier {$accessExpressionRet = new StructAccess($accessExpressionRet, $id.identifierRet);}) )*
     ((LBRACK e = expression RBRACK {$accessExpressionRet = new ListAccessByIndex($accessExpressionRet, $e.expressionRet);})
