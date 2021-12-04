@@ -177,9 +177,12 @@ varDecStatement returns[VarDecStmt varDecStatementRet]:
 functionCallStmt returns [FunctionCallStmt functionCallStmtRet] :
     oe = otherExpression
     {Expression instanceExpression = $oe.otherExpressionRet;}
-    (( LPAR  fa=functionArguments RPAR {instanceExpression = new FunctionCall(instanceExpression, $fa.functionArgumentsRet);})
-        | (DOT id = identifier {instanceExpression = new StructAccess(instanceExpression, $id.identifierRet);}))*
-    (l = LPAR fa = functionArguments RPAR {$functionCallStmtRet = new FunctionCallStmt(new FunctionCall(instanceExpression, $fa.functionArgumentsRet));});
+    (( lp = LPAR  fa=functionArguments RPAR {instanceExpression = new FunctionCall(instanceExpression, $fa.functionArgumentsRet);
+                                             instanceExpression.setLine($lp.getLine());})
+        | (d = DOT id = identifier {instanceExpression = new StructAccess(instanceExpression, $id.identifierRet);
+                                    instanceExpression.setLine($d.getLine());}))*
+    (l = LPAR fa = functionArguments RPAR {$functionCallStmtRet = new FunctionCallStmt(new FunctionCall(instanceExpression, $fa.functionArgumentsRet));
+                                           $functionCallStmtRet.setLine($l.getLine());});
 
 //todo - done
 returnStatement returns [ReturnStmt returnStatementRet]:
