@@ -183,11 +183,6 @@ functionCallStmt returns [FunctionCallStmt functionCallStmtRet] :
                                     instanceExpression.setLine($d.getLine());}))*
     (l = LPAR fa = functionArguments RPAR {$functionCallStmtRet = new FunctionCallStmt(new FunctionCall(instanceExpression, $fa.functionArgumentsRet));
                                            $functionCallStmtRet.setLine($l.getLine());});
-    oe = otherExpression
-    {Expression instanceExpression = $oe.otherExpressionRet;}
-    (( LPAR  fa=functionArguments RPAR {instanceExpression = new FunctionCall(instanceExpression, $fa.functionArgumentsRet);})
-        | (DOT id = identifier {instanceExpression = new StructAccess(instanceExpression, $id.identifierRet);}))*
-    (l = LPAR fa = functionArguments RPAR {$functionCallStmtRet = new FunctionCallStmt(new FunctionCall(instanceExpression, $fa.functionArgumentsRet));});
 
 //todo - done
 returnStatement returns [ReturnStmt returnStatementRet]:
@@ -342,7 +337,12 @@ preUnaryExpression returns [Expression preUnaryExpressionRet]:
 
 //todo ?
 accessExpression returns [Expression accessExpressionRet]:
-    otherExpression ((LPAR functionArguments RPAR) | (DOT identifier))*  ((LBRACK expression RBRACK) | (DOT identifier))*;
+    oe = otherExpression
+    {$accessExpressionRet = $oe.otherExpressionRet;}
+    ((LPAR fa = functionArguments RPAR {$accessExpressionRet = new FunctionCall($accessExpressionRet, $fa.functionArgumentsRet);})
+        | (DOT id=identifier {$accessExpressionRet = new StructAccess($accessExpressionRet, $id.identifierRet);}) )*
+    ((LBRACK e = expression RBRACK {$accessExpressionRet = new ListAccessByIndex($accessExpressionRet, $e.expressionRet);})
+        | (DOT id=identifier {$accessExpressionRet = new StructAccess($accessExpressionRet, $id.identifierRet);}))*;
 
 //todo - done
 otherExpression returns[Expression otherExpressionRet]:

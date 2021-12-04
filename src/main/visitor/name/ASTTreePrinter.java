@@ -68,115 +68,142 @@ public class ASTTreePrinter extends Visitor<Void> {
 
     @Override
     public Void visit(ConditionalStmt conditionalStmt) {
-        //todo
+        messagePrinter(conditionalStmt.getLine(), conditionalStmt.toString());
+        conditionalStmt.getCondition().accept(this);
+        conditionalStmt.getThenBody().accept(this);
+        conditionalStmt.getElseBody().accept(this);
         return null;
     }
 
     @Override
     public Void visit(FunctionCallStmt functionCallStmt) {
-        //todo
+        messagePrinter(functionCallStmt.getLine(), functionCallStmt.toString());
+        functionCallStmt.getFunctionCall().accept(this);
         return null;
     }
 
     @Override
     public Void visit(DisplayStmt displayStmt) {
-        //todo
+        messagePrinter(displayStmt.getLine(), displayStmt.toString());
+        displayStmt.getArg().accept(this);
         return null;
     }
 
     @Override
     public Void visit(ReturnStmt returnStmt) {
-        //todo
+        messagePrinter(returnStmt.getLine(), returnStmt.toString());
+        returnStmt.getReturnedExpr().accept(this);
         return null;
     }
 
     @Override
     public Void visit(LoopStmt loopStmt) {
-        //todo
+        messagePrinter(loopStmt.getLine(), loopStmt.toString());
+        loopStmt.getCondition().accept(this);
+        loopStmt.getBody().accept(this);
         return null;
     }
 
     @Override
     public Void visit(VarDecStmt varDecStmt) {
-        //todo
+        messagePrinter(varDecStmt.getLine(), varDecStmt.toString());
+        for (VariableDeclaration var : varDecStmt.getVars())
+            var.accept(this);
         return null;
     }
 
     @Override
     public Void visit(ListAppendStmt listAppendStmt) {
-        //todo
+        messagePrinter(listAppendStmt.getLine(), listAppendStmt.toString());
+        listAppendStmt.getListAppendExpr().accept(this);
         return null;
     }
 
     @Override
     public Void visit(ListSizeStmt listSizeStmt) {
-        //todo
+        messagePrinter(listSizeStmt.getLine(), listSizeStmt.toString());
+        listSizeStmt.getListSizeExpr().accept(this);
         return null;
     }
 
     @Override
     public Void visit(BinaryExpression binaryExpression) {
-        //todo
+        messagePrinter(binaryExpression.getLine(), binaryExpression.toString());
+        binaryExpression.getFirstOperand().accept(this);
+        binaryExpression.getSecondOperand().accept(this);
         return null;
     }
 
     @Override
     public Void visit(UnaryExpression unaryExpression) {
-        //todo
+        messagePrinter(unaryExpression.getLine(), unaryExpression.toString());
+        unaryExpression.getOperand().accept(this);
         return null;
     }
 
     @Override
     public Void visit(FunctionCall funcCall) {
-        //todo
+        messagePrinter(funcCall.getLine(), funcCall.toString());
+        funcCall.getInstance().accept(this);
+        for (Expression arg : funcCall.getArgs())
+            arg.accept(this);
         return null;
     }
 
     @Override
     public Void visit(Identifier identifier) {
-        //todo
+        messagePrinter(identifier.getLine(), identifier.toString());
         return null;
     }
 
     @Override
     public Void visit(ListAccessByIndex listAccessByIndex) {
-        //todo
+        messagePrinter(listAccessByIndex.getLine(), listAccessByIndex.toString());
+        listAccessByIndex.getInstance().accept(this);
+        listAccessByIndex.getIndex().accept(this);
         return null;
     }
 
     @Override
     public Void visit(StructAccess structAccess) {
-        //todo
+        messagePrinter(structAccess.getLine(), structAccess.toString());
+        structAccess.getInstance().accept(this);
+        structAccess.getElement().accept(this);
         return null;
     }
 
     @Override
     public Void visit(ListSize listSize) {
-        //todo
+        messagePrinter(listSize.getLine(), listSize.toString());
+        listSize.getArg().accept(this);
         return null;
     }
 
     @Override
     public Void visit(ListAppend listAppend) {
-        //todo
+        messagePrinter(listAppend.getLine(), listAppend.toString());
+        listAppend.getListArg().accept(this);
+        listAppend.getElementArg().accept(this);
         return null;
     }
 
     @Override
     public Void visit(ExprInPar exprInPar) {
-        //todo
+        messagePrinter(exprInPar.getLine(), exprInPar.toString());
+        for (Expression input : exprInPar.getInputs())
+            input.accept(this);
         return null;
     }
 
     @Override
     public Void visit(IntValue intValue) {
-        //todo
+        messagePrinter(intValue.getLine(), intValue.toString());
         return null;
     }
 
     @Override
     public Void visit(BoolValue boolValue) {
-        //todo
+        messagePrinter(boolValue.getLine(), boolValue.toString());
         return null;
     }
 }
