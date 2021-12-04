@@ -3460,6 +3460,7 @@ public class CmmParser extends Parser {
 		public Expression otherExpressionRet;
 		public ValueContext e1;
 		public IdentifierContext e2;
+		public Token l;
 		public FunctionArgumentsContext e3;
 		public SizeContext e4;
 		public AppendContext e5;
@@ -3469,8 +3470,8 @@ public class CmmParser extends Parser {
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
 		}
-		public TerminalNode LPAR() { return getToken(CmmParser.LPAR, 0); }
 		public TerminalNode RPAR() { return getToken(CmmParser.RPAR, 0); }
+		public TerminalNode LPAR() { return getToken(CmmParser.LPAR, 0); }
 		public FunctionArgumentsContext functionArguments() {
 			return getRuleContext(FunctionArgumentsContext.class,0);
 		}
@@ -3528,12 +3529,13 @@ public class CmmParser extends Parser {
 				enterOuterAlt(_localctx, 3);
 				{
 				setState(621);
-				match(LPAR);
+				((OtherExpressionContext)_localctx).l = match(LPAR);
 				{
 				setState(622);
 				((OtherExpressionContext)_localctx).e3 = functionArguments();
 				}
 				((OtherExpressionContext)_localctx).otherExpressionRet =  new ExprInPar(((OtherExpressionContext)_localctx).e3.functionArgumentsRet);
+				                                   _localctx.otherExpressionRet.setLine(((OtherExpressionContext)_localctx).l.getLine());
 				setState(624);
 				match(RPAR);
 				}
@@ -3612,7 +3614,7 @@ public class CmmParser extends Parser {
 			setState(636);
 			((SizeContext)_localctx).e = expression();
 			}
-			((SizeContext)_localctx).sizeRet =  new  ListSize(((SizeContext)_localctx).e.expressionRet);
+			((SizeContext)_localctx).sizeRet =  new ListSize(((SizeContext)_localctx).e.expressionRet);
 			    int line = ((SizeContext)_localctx).s.getLine();
 			    _localctx.sizeRet.setLine(line);
 			    

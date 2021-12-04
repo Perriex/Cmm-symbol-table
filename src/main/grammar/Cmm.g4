@@ -23,7 +23,7 @@ program returns[Program programRet]:
      $programRet.setLine(line);}
     (s = structDeclaration {$programRet.addStruct($s.structDeclarationRet);})*
     (f = functionDeclaration {$programRet.addFunction($f.functionDeclarationRet);})*
-    m = main {$programRet.setMain($m.mainRet);};
+     m = main {$programRet.setMain($m.mainRet);};
 
 //todo - done!
 main returns[MainDeclaration mainRet]:
@@ -325,14 +325,15 @@ accessExpression returns [Expression accessExpressionRet]:
 otherExpression returns[Expression otherExpressionRet]:
     e1 = value {$otherExpressionRet = $e1.valueRet;}|
     e2 = identifier {$otherExpressionRet = $e2.identifierRet;}|
-    LPAR (e3 = functionArguments) {$otherExpressionRet = new ExprInPar($e3.functionArgumentsRet);} RPAR  |
+    l = LPAR (e3 = functionArguments) {$otherExpressionRet = new ExprInPar($e3.functionArgumentsRet);
+                                   $otherExpressionRet.setLine($l.getLine());} RPAR  |
     e4 = size  {$otherExpressionRet = $e4.sizeRet;}|
     e5 = append  {$otherExpressionRet = $e5.appendRet;} ;
 
 //todo - done
 size returns [ListSize sizeRet]:
     s = SIZE LPAR (e = expression)
-    {$sizeRet = new  ListSize($e.expressionRet);
+    {$sizeRet = new ListSize($e.expressionRet);
     int line = $s.getLine();
     $sizeRet.setLine(line);
     }
