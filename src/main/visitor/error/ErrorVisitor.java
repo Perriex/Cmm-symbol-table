@@ -12,8 +12,10 @@ import main.ast.nodes.statement.*;
 import main.compileError.CompileError;
 import main.compileError.nameError.DuplicateFunction;
 import main.compileError.nameError.DuplicateStruct;
+import main.compileError.nameError.FunctionStructConflict;
 import main.symbolTable.SymbolTable;
 import main.symbolTable.exceptions.ItemAlreadyExistsException;
+import main.symbolTable.exceptions.ItemNotFoundException;
 import main.symbolTable.items.FunctionSymbolTableItem;
 import main.symbolTable.items.StructSymbolTableItem;
 import main.visitor.Visitor;
@@ -22,6 +24,7 @@ import java.util.UUID;
 
 public class ErrorVisitor extends Visitor<Void> {
     public Boolean NoError = true;
+
     public void errorPrinter(CompileError error) {
         System.out.println(error.getMessage());
         NoError = false;
@@ -33,35 +36,49 @@ public class ErrorVisitor extends Visitor<Void> {
         SymbolTable.root = new SymbolTable();
 
         for (StructDeclaration struct : program.getStructs()) {
+            var structItem = new StructSymbolTableItem(struct);
+            SymbolTable.push(new SymbolTable(SymbolTable.root));
+            structItem.setStructSymbolTable(SymbolTable.top);
+
             try {
-                SymbolTable.root.put(new StructSymbolTableItem(struct));
+                SymbolTable.root.put(structItem);
             } catch (ItemAlreadyExistsException e) {
                 errorPrinter(new DuplicateStruct(struct.getLine(), struct.getStructName().getName()));
-                struct.getStructName().setName(UUID.randomUUID().toString());
+                structItem.setName(UUID.randomUUID().toString());
                 try {
-                    SymbolTable.root.put(new StructSymbolTableItem(struct));
+                    SymbolTable.root.put(structItem);
                 } catch (ItemAlreadyExistsException ex) {
                     ex.printStackTrace();
                 }
             }
             struct.accept(this);
+            SymbolTable.pop();
         }
 
         for (FunctionDeclaration function : program.getFunctions()) {
+            var funcItem = new FunctionSymbolTableItem(function);
+            SymbolTable.push(new SymbolTable(SymbolTable.root));
+            funcItem.setFunctionSymbolTable(SymbolTable.top);
+
             try {
-                SymbolTable.root.put(new FunctionSymbolTableItem(function));
+                SymbolTable.root.getItem(StructSymbolTableItem.START_KEY + funcItem.getName());
+                errorPrinter(new FunctionStructConflict(function.getLine(), funcItem.getName()));
+            } catch (ItemNotFoundException ignored) {}
+
+            try {
+                SymbolTable.root.put(funcItem);
             } catch (ItemAlreadyExistsException e) {
-                errorPrinter(new DuplicateFunction(function.getLine(), function.getFunctionName().getName()));
-                function.getFunctionName().setName(UUID.randomUUID().toString());
+                errorPrinter(new DuplicateFunction(function.getLine(), funcItem.getName()));
+                funcItem.setName(UUID.randomUUID().toString());
                 try {
-                    SymbolTable.root.put(new FunctionSymbolTableItem(function));
+                    SymbolTable.root.put(funcItem);
                 } catch (ItemAlreadyExistsException ex) {
                     ex.printStackTrace();
                 }
             }
             function.accept(this);
+            SymbolTable.pop();
         }
-
         program.getMain().accept(this);
         return super.visit(program);
     }
