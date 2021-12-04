@@ -2752,6 +2752,7 @@ public class CmmParser extends Parser {
 				setState(507);
 				((OrExpressionContext)_localctx).ae = andExpression();
 				((OrExpressionContext)_localctx).orExpressionRet =  new BinaryExpression(_localctx.orExpressionRet, ((OrExpressionContext)_localctx).ae.andExpressionRet, BinaryOperator.or);
+				     _localctx.orExpressionRet.setLine(((OrExpressionContext)_localctx).op.getLine());
 				}
 				}
 				setState(514);
@@ -2825,6 +2826,7 @@ public class CmmParser extends Parser {
 				setState(518);
 				((AndExpressionContext)_localctx).ee = equalityExpression();
 				((AndExpressionContext)_localctx).andExpressionRet =  new BinaryExpression(_localctx.andExpressionRet, ((AndExpressionContext)_localctx).ee.equalityExpressionRet, BinaryOperator.and);
+				     _localctx.andExpressionRet.setLine(((AndExpressionContext)_localctx).op.getLine());
 				}
 				}
 				setState(525);
@@ -2898,6 +2900,7 @@ public class CmmParser extends Parser {
 				setState(529);
 				((EqualityExpressionContext)_localctx).re = relationalExpression();
 				((EqualityExpressionContext)_localctx).equalityExpressionRet =  new BinaryExpression(_localctx.equalityExpressionRet, ((EqualityExpressionContext)_localctx).re.relationalExpressionRet, BinaryOperator.eq);
+				    _localctx.equalityExpressionRet.setLine(((EqualityExpressionContext)_localctx).op.getLine());
 				}
 				}
 				setState(536);
@@ -2991,6 +2994,7 @@ public class CmmParser extends Parser {
 				setState(543);
 				((RelationalExpressionContext)_localctx).ae = additiveExpression();
 				((RelationalExpressionContext)_localctx).relationalExpressionRet =  new BinaryExpression(_localctx.relationalExpressionRet, ((RelationalExpressionContext)_localctx).ae.additiveExpressionRet, (((RelationalExpressionContext)_localctx).op!=null?((RelationalExpressionContext)_localctx).op.getText():null) == "<" ? BinaryOperator.lt : BinaryOperator.gt);
+				    _localctx.relationalExpressionRet.setLine(((RelationalExpressionContext)_localctx).op.getLine());
 				}
 				}
 				setState(550);
@@ -3084,6 +3088,7 @@ public class CmmParser extends Parser {
 				setState(557);
 				((AdditiveExpressionContext)_localctx).me = multiplicativeExpression();
 				((AdditiveExpressionContext)_localctx).additiveExpressionRet =  new BinaryExpression(_localctx.additiveExpressionRet, ((AdditiveExpressionContext)_localctx).me.multiplicativeExpressionRet, (((AdditiveExpressionContext)_localctx).op!=null?((AdditiveExpressionContext)_localctx).op.getText():null) == "+" ? BinaryOperator.add : BinaryOperator.sub);
+				    _localctx.additiveExpressionRet.setLine(((AdditiveExpressionContext)_localctx).op.getLine());
 				}
 				}
 				setState(564);
@@ -3177,6 +3182,7 @@ public class CmmParser extends Parser {
 				setState(571);
 				((MultiplicativeExpressionContext)_localctx).pu = preUnaryExpression();
 				((MultiplicativeExpressionContext)_localctx).multiplicativeExpressionRet =  new BinaryExpression(_localctx.multiplicativeExpressionRet, ((MultiplicativeExpressionContext)_localctx).pu.preUnaryExpressionRet, (((MultiplicativeExpressionContext)_localctx).op!=null?((MultiplicativeExpressionContext)_localctx).op.getText():null) == "*" ? BinaryOperator.mult : BinaryOperator.div);
+				    _localctx.multiplicativeExpressionRet.setLine(((MultiplicativeExpressionContext)_localctx).op.getLine());
 				}
 				}
 				setState(578);
@@ -3262,6 +3268,7 @@ public class CmmParser extends Parser {
 				((PreUnaryExpressionContext)_localctx).pe = preUnaryExpression();
 				}
 				((PreUnaryExpressionContext)_localctx).preUnaryExpressionRet =  new UnaryExpression(((PreUnaryExpressionContext)_localctx).pe.preUnaryExpressionRet, (((PreUnaryExpressionContext)_localctx).op!=null?((PreUnaryExpressionContext)_localctx).op.getText():null) == "-" ? UnaryOperator.minus : UnaryOperator.not);
+				    _localctx.preUnaryExpressionRet.setLine(((PreUnaryExpressionContext)_localctx).op.getLine());
 				}
 				break;
 			case SIZE:
@@ -3535,7 +3542,7 @@ public class CmmParser extends Parser {
 				((OtherExpressionContext)_localctx).e3 = functionArguments();
 				}
 				((OtherExpressionContext)_localctx).otherExpressionRet =  new ExprInPar(((OtherExpressionContext)_localctx).e3.functionArgumentsRet);
-				                                   _localctx.otherExpressionRet.setLine(((OtherExpressionContext)_localctx).l.getLine());
+				                                       _localctx.otherExpressionRet.setLine(((OtherExpressionContext)_localctx).l.getLine());
 				setState(624);
 				match(RPAR);
 				}

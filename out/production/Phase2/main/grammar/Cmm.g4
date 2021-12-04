@@ -23,7 +23,7 @@ program returns[Program programRet]:
      $programRet.setLine(line);}
     (s = structDeclaration {$programRet.addStruct($s.structDeclarationRet);})*
     (f = functionDeclaration {$programRet.addFunction($f.functionDeclarationRet);})*
-    m = main {$programRet.setMain($m.mainRet);};
+     m = main {$programRet.setMain($m.mainRet);};
 
 //todo - done!
 main returns[MainDeclaration mainRet]:
@@ -43,7 +43,7 @@ structDeclaration returns[StructDeclaration structDeclarationRet]:
     (
     (
     (b = BEGIN
-    (b1 = structBody // maybe??? with line
+    (b1 = structBody
     {$structDeclarationRet.setBody($b1.structBodyRet);
     int line = $b.getLine();
     $b1.structBodyRet.setLine(line);}
@@ -275,46 +275,59 @@ expression returns [Expression expressionRet]:
     int line = $op.getLine();
     $expressionRet.setLine(line);})? ;
 
-//todo - done?
+//todo - done
 orExpression returns [Expression orExpressionRet]:
     ae = andExpression
     {$orExpressionRet = $ae.andExpressionRet;}
-    (op = OR ae = andExpression {$orExpressionRet = new BinaryExpression($orExpressionRet, $ae.andExpressionRet, BinaryOperator.or);})*;
+    (op = OR ae = andExpression
+    {$orExpressionRet = new BinaryExpression($orExpressionRet, $ae.andExpressionRet, BinaryOperator.or);
+     $orExpressionRet.setLine($op.getLine());})*;
 
 //todo - done?
 andExpression returns [Expression andExpressionRet]:
     ee = equalityExpression
     {$andExpressionRet = $ee.equalityExpressionRet;}
-    (op = AND ee = equalityExpression {$andExpressionRet = new BinaryExpression($andExpressionRet, $ee.equalityExpressionRet, BinaryOperator.and);})*;
+    (op = AND ee = equalityExpression
+    {$andExpressionRet = new BinaryExpression($andExpressionRet, $ee.equalityExpressionRet, BinaryOperator.and);
+     $andExpressionRet.setLine($op.getLine());})*;
 
 //todo - done?
 equalityExpression returns [Expression equalityExpressionRet]:
     re = relationalExpression
     {$equalityExpressionRet = $re.relationalExpressionRet;}
-    (op = EQUAL re = relationalExpression {$equalityExpressionRet = new BinaryExpression($equalityExpressionRet, $re.relationalExpressionRet, BinaryOperator.eq);})*;
+    (op = EQUAL re = relationalExpression
+    {$equalityExpressionRet = new BinaryExpression($equalityExpressionRet, $re.relationalExpressionRet, BinaryOperator.eq);
+    $equalityExpressionRet.setLine($op.getLine());})*;
 
 //todo - done?
 relationalExpression returns [Expression relationalExpressionRet]:
     ae = additiveExpression
     {$relationalExpressionRet = $ae.additiveExpressionRet;}
-    ((op = GREATER_THAN | op = LESS_THAN) ae = additiveExpression {$relationalExpressionRet = new BinaryExpression($relationalExpressionRet, $ae.additiveExpressionRet, $op.text == "<" ? BinaryOperator.lt : BinaryOperator.gt);})*;
+    ((op = GREATER_THAN | op = LESS_THAN) ae = additiveExpression
+    {$relationalExpressionRet = new BinaryExpression($relationalExpressionRet, $ae.additiveExpressionRet, $op.text == "<" ? BinaryOperator.lt : BinaryOperator.gt);
+    $relationalExpressionRet.setLine($op.getLine());})*;
 
 //todo - done?
 additiveExpression returns [Expression additiveExpressionRet]:
     me = multiplicativeExpression
     {$additiveExpressionRet = $me.multiplicativeExpressionRet;}
-    ((op = PLUS | op = MINUS) me = multiplicativeExpression {$additiveExpressionRet = new BinaryExpression($additiveExpressionRet, $me.multiplicativeExpressionRet, $op.text == "+" ? BinaryOperator.add : BinaryOperator.sub);})*;
+    ((op = PLUS | op = MINUS) me = multiplicativeExpression
+    {$additiveExpressionRet = new BinaryExpression($additiveExpressionRet, $me.multiplicativeExpressionRet, $op.text == "+" ? BinaryOperator.add : BinaryOperator.sub);
+    $additiveExpressionRet.setLine($op.getLine());})*;
 
 //todo - done?
 multiplicativeExpression returns [Expression multiplicativeExpressionRet]:
     pu = preUnaryExpression
     {$multiplicativeExpressionRet = $pu.preUnaryExpressionRet;}
-    ((op = MULT | op = DIVIDE) pu = preUnaryExpression {$multiplicativeExpressionRet = new BinaryExpression($multiplicativeExpressionRet, $pu.preUnaryExpressionRet, $op.text == "*" ? BinaryOperator.mult : BinaryOperator.div);})*;
+    ((op = MULT | op = DIVIDE) pu = preUnaryExpression
+    {$multiplicativeExpressionRet = new BinaryExpression($multiplicativeExpressionRet, $pu.preUnaryExpressionRet, $op.text == "*" ? BinaryOperator.mult : BinaryOperator.div);
+    $multiplicativeExpressionRet.setLine($op.getLine());})*;
 
 //todo - done?
 preUnaryExpression returns [Expression preUnaryExpressionRet]:
     ((op = NOT | op = MINUS) pe = preUnaryExpression )
-    {$preUnaryExpressionRet = new UnaryExpression($pe.preUnaryExpressionRet, $op.text == "-" ? UnaryOperator.minus : UnaryOperator.not);}
+    {$preUnaryExpressionRet = new UnaryExpression($pe.preUnaryExpressionRet, $op.text == "-" ? UnaryOperator.minus : UnaryOperator.not);
+    $preUnaryExpressionRet.setLine($op.getLine());}
     | ae = accessExpression {$preUnaryExpressionRet = $ae.accessExpressionRet;};
 
 //todo ?
@@ -325,14 +338,15 @@ accessExpression returns [Expression accessExpressionRet]:
 otherExpression returns[Expression otherExpressionRet]:
     e1 = value {$otherExpressionRet = $e1.valueRet;}|
     e2 = identifier {$otherExpressionRet = $e2.identifierRet;}|
-    LPAR (e3 = functionArguments) {$otherExpressionRet = new ExprInPar($e3.functionArgumentsRet);} RPAR  |
+    l = LPAR (e3 = functionArguments) {$otherExpressionRet = new ExprInPar($e3.functionArgumentsRet);
+                                       $otherExpressionRet.setLine($l.getLine());} RPAR  |
     e4 = size  {$otherExpressionRet = $e4.sizeRet;}|
     e5 = append  {$otherExpressionRet = $e5.appendRet;} ;
 
 //todo - done
 size returns [ListSize sizeRet]:
     s = SIZE LPAR (e = expression)
-    {$sizeRet = new  ListSize($e.expressionRet);
+    {$sizeRet = new ListSize($e.expressionRet);
     int line = $s.getLine();
     $sizeRet.setLine(line);
     }
