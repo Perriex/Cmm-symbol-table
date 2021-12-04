@@ -283,34 +283,48 @@ expression returns [Expression expressionRet]:
 
 //todo ?
 orExpression returns [Expression orExpressionRet]:
-    ae = andExpression (op = OR andExpression )*;
+    ae = andExpression
+    {$orExpressionRet = ae.andExpressionRet;}
+    (op = OR ae = andExpression {$orExpressionRet = new BinaryExpression($orExpressionRet, ae.andExpressionRet, BinaryOperator.or)};)*;
 
 //todo ?
-andExpression:
-    equalityExpression (op = AND equalityExpression )*;
+andExpression returns [Expression andExpressionRet]:
+    ee = equalityExpression
+    {$andExpressionRet = ee.equalityExpressionRet;}
+    (op = AND ee = equalityExpression {$andExpressionRet = new BinaryExpression($andExpressionRet, ee.equalityExpressionRet, BinaryOperator.and)};)*;
 
 //todo ?
-equalityExpression:
-    relationalExpression (op = EQUAL relationalExpression )*;
+equalityExpression returns [Expression equalityExpressionRet]:
+    re = relationalExpression
+    {$equalityExpressionRet = re.relationalExpressionRet;}
+    (op = EQUAL re = relationalExpression {$equalityExpressionRet = new BinaryExpression($equalityExpressionRet, re.relationalExpressionRet, BinaryOperator.eq);})*;
 
 //todo ?
-relationalExpression:
-    additiveExpression ((op = GREATER_THAN | op = LESS_THAN) additiveExpression )*;
+relationalExpression returns [Expression relationalExpressionRet]:
+    ae = additiveExpression
+    {$equalityExpressionRet = ae.additiveExpressionRet;}
+    ((op = GREATER_THAN | op = LESS_THAN) ae = additiveExpression {$equalityExpressionRet = new BinaryExpression($relationalExpressionRet, ae.additiveExpressionRet, op == '<' ? BinaryOperator.lt : BinaryOperator.gt);})*;
 
 //todo ?
-additiveExpression:
-    multiplicativeExpression ((op = PLUS | op = MINUS) multiplicativeExpression )*;
+additiveExpression returns [Expression addictiveExpressionRet]:
+    me = multiplicativeExpression
+    {$addictiveExpressionRet = me.multiplicativeExpressionRet;}
+    ((op = PLUS | op = MINUS) me = multiplicativeExpression {$addictiveExpressionRet = new BinaryExpression($addictiveExpressionRet, me.additiveExpressionRet, op == '+' ? BinaryOperator.add : BinaryOperator.sub);})*;
 
 //todo ?
-multiplicativeExpression:
-    preUnaryExpression ((op = MULT | op = DIVIDE) preUnaryExpression )*;
+multiplicativeExpression returns [Expression multiplicativeExpressionRet]:
+    pu = preUnaryExpression
+    {$multiplicativeExpressionRet = pu.preUnaryExpressionRet;}
+    ((op = MULT | op = DIVIDE) pu = preUnaryExpression {$multiplicativeExpressionRet = new BinaryExpression($multiplicativeExpressionRet, pu.preUnaryExpressionRet, op == '*' ? BinaryOperator.mult : BinaryOperator.div);})*;
 
 //todo ?
-preUnaryExpression:
-    ((op = NOT | op = MINUS) preUnaryExpression ) | accessExpression;
+preUnaryExpression returns [Expression preUnaryExpressionRet]:
+    ((op = NOT | op = MINUS) pe = preUnaryExpression )
+    {$preUnaryExpressionRet = new UnaryExpression(pe.preUnaryExpressionRet, op == '-' ? UnaryOperator.minus : UnaryOperator.not);}
+    | ae = accessExpression {$preUnaryExpressionRet = ae.accessExpressionRet;};
 
 //todo ?
-accessExpression:
+accessExpression returns [Expression preUnaryExpressionRet]:
     otherExpression ((LPAR functionArguments RPAR) | (DOT identifier))*  ((LBRACK expression RBRACK) | (DOT identifier))*;
 
 //todo
