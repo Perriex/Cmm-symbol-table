@@ -1,4 +1,4 @@
-// Generated from D:/UT/Term 5/Compiler/Ca/CA2/Phase2/Phase2/src/main/grammar\Cmm.g4 by ANTLR 4.9.2
+// Generated from E:/Repos/Compiler-CA2/src/main/grammar\Cmm.g4 by ANTLR 4.9.2
 package main.grammar;
 
      import main.ast.nodes.*;
@@ -1182,6 +1182,7 @@ public class CmmParser extends Parser {
 				((FunctionArgsDecContext)_localctx).id = identifier();
 				}
 				VariableDeclaration arg1 = new VariableDeclaration(((FunctionArgsDecContext)_localctx).id.identifierRet,((FunctionArgsDecContext)_localctx).t.typeRet);
+				    arg1.setLine(((FunctionArgsDecContext)_localctx).id.identifierRet.getLine());
 				    _localctx.variableDeclarationRet.add(arg1);
 				setState(273);
 				_errHandler.sync(this);
@@ -1200,6 +1201,7 @@ public class CmmParser extends Parser {
 					((FunctionArgsDecContext)_localctx).id = identifier();
 					}
 					VariableDeclaration arg = new VariableDeclaration(((FunctionArgsDecContext)_localctx).id.identifierRet,((FunctionArgsDecContext)_localctx).t.typeRet);
+					    arg.setLine(((FunctionArgsDecContext)_localctx).id.identifierRet.getLine());
 					    _localctx.variableDeclarationRet.add(arg);
 					}
 					}
@@ -1661,6 +1663,7 @@ public class CmmParser extends Parser {
 		public TypeContext t;
 		public IdentifierContext id;
 		public OrExpressionContext e;
+		public Token c;
 		public IdentifierContext id2;
 		public OrExpressionContext e2;
 		public TypeContext type() {
@@ -1676,15 +1679,15 @@ public class CmmParser extends Parser {
 		public TerminalNode ASSIGN(int i) {
 			return getToken(CmmParser.ASSIGN, i);
 		}
-		public List<TerminalNode> COMMA() { return getTokens(CmmParser.COMMA); }
-		public TerminalNode COMMA(int i) {
-			return getToken(CmmParser.COMMA, i);
-		}
 		public List<OrExpressionContext> orExpression() {
 			return getRuleContexts(OrExpressionContext.class);
 		}
 		public OrExpressionContext orExpression(int i) {
 			return getRuleContext(OrExpressionContext.class,i);
+		}
+		public List<TerminalNode> COMMA() { return getTokens(CmmParser.COMMA); }
+		public TerminalNode COMMA(int i) {
+			return getToken(CmmParser.COMMA, i);
 		}
 		public VarDecStatementContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -1719,6 +1722,8 @@ public class CmmParser extends Parser {
 			((VarDecStatementContext)_localctx).id = identifier();
 			VariableDeclaration var = new VariableDeclaration(((VarDecStatementContext)_localctx).id.identifierRet,((VarDecStatementContext)_localctx).t.typeRet);
 			    int line = ((VarDecStatementContext)_localctx).id.identifierRet.getLine();
+			    var.setLine(line);
+			    _localctx.varDecStatementRet.addVar(var);
 			    _localctx.varDecStatementRet.setLine(line);
 			setState(367);
 			_errHandler.sync(this);
@@ -1730,7 +1735,6 @@ public class CmmParser extends Parser {
 				setState(364);
 				((VarDecStatementContext)_localctx).e = orExpression();
 				var.setDefaultValue(((VarDecStatementContext)_localctx).e.orExpressionRet);
-				                                 _localctx.varDecStatementRet.addVar(var);
 				}
 			}
 
@@ -1741,10 +1745,12 @@ public class CmmParser extends Parser {
 				{
 				{
 				setState(369);
-				match(COMMA);
+				((VarDecStatementContext)_localctx).c = match(COMMA);
 				setState(370);
 				((VarDecStatementContext)_localctx).id2 = identifier();
 				VariableDeclaration var2 = new VariableDeclaration(((VarDecStatementContext)_localctx).id2.identifierRet,((VarDecStatementContext)_localctx).t.typeRet);
+				        var2.setLine(((VarDecStatementContext)_localctx).c.getLine());
+				        _localctx.varDecStatementRet.addVar(var2);
 				setState(376);
 				_errHandler.sync(this);
 				_la = _input.LA(1);
@@ -1755,7 +1761,6 @@ public class CmmParser extends Parser {
 					setState(373);
 					((VarDecStatementContext)_localctx).e2 = orExpression();
 					var2.setDefaultValue(((VarDecStatementContext)_localctx).e2.orExpressionRet);
-					                                  _localctx.varDecStatementRet.addVar(var2);
 					}
 				}
 
@@ -1893,8 +1898,10 @@ public class CmmParser extends Parser {
 			((FunctionCallStmtContext)_localctx).fa = functionArguments();
 			setState(401);
 			match(RPAR);
-			((FunctionCallStmtContext)_localctx).functionCallStmtRet =  new FunctionCallStmt(new FunctionCall(instanceExpression, ((FunctionCallStmtContext)_localctx).fa.functionArgumentsRet));
-			                                           _localctx.functionCallStmtRet.setLine(((FunctionCallStmtContext)_localctx).l.getLine());
+			 FunctionCall call = new FunctionCall(instanceExpression, ((FunctionCallStmtContext)_localctx).fa.functionArgumentsRet);
+			       call.setLine(((FunctionCallStmtContext)_localctx).l.getLine());
+			       ((FunctionCallStmtContext)_localctx).functionCallStmtRet =  new FunctionCallStmt(call);
+			       _localctx.functionCallStmtRet.setLine(((FunctionCallStmtContext)_localctx).l.getLine());
 			}
 			}
 		}
@@ -3003,7 +3010,7 @@ public class CmmParser extends Parser {
 				}
 				setState(549);
 				((RelationalExpressionContext)_localctx).ae = additiveExpression();
-				((RelationalExpressionContext)_localctx).relationalExpressionRet =  new BinaryExpression(_localctx.relationalExpressionRet, ((RelationalExpressionContext)_localctx).ae.additiveExpressionRet, (((RelationalExpressionContext)_localctx).op!=null?((RelationalExpressionContext)_localctx).op.getText():null) == "<" ? BinaryOperator.lt : BinaryOperator.gt);
+				((RelationalExpressionContext)_localctx).relationalExpressionRet =  new BinaryExpression(_localctx.relationalExpressionRet, ((RelationalExpressionContext)_localctx).ae.additiveExpressionRet, (((RelationalExpressionContext)_localctx).op!=null?((RelationalExpressionContext)_localctx).op.getText():null).equals("<") ? BinaryOperator.lt : BinaryOperator.gt);
 				    _localctx.relationalExpressionRet.setLine(((RelationalExpressionContext)_localctx).op.getLine());
 				}
 				}
@@ -3097,7 +3104,7 @@ public class CmmParser extends Parser {
 				}
 				setState(563);
 				((AdditiveExpressionContext)_localctx).me = multiplicativeExpression();
-				((AdditiveExpressionContext)_localctx).additiveExpressionRet =  new BinaryExpression(_localctx.additiveExpressionRet, ((AdditiveExpressionContext)_localctx).me.multiplicativeExpressionRet, (((AdditiveExpressionContext)_localctx).op!=null?((AdditiveExpressionContext)_localctx).op.getText():null) == "+" ? BinaryOperator.add : BinaryOperator.sub);
+				((AdditiveExpressionContext)_localctx).additiveExpressionRet =  new BinaryExpression(_localctx.additiveExpressionRet, ((AdditiveExpressionContext)_localctx).me.multiplicativeExpressionRet, (((AdditiveExpressionContext)_localctx).op!=null?((AdditiveExpressionContext)_localctx).op.getText():null).equals("+") ? BinaryOperator.add : BinaryOperator.sub);
 				    _localctx.additiveExpressionRet.setLine(((AdditiveExpressionContext)_localctx).op.getLine());
 				}
 				}
@@ -3191,7 +3198,7 @@ public class CmmParser extends Parser {
 				}
 				setState(577);
 				((MultiplicativeExpressionContext)_localctx).pu = preUnaryExpression();
-				((MultiplicativeExpressionContext)_localctx).multiplicativeExpressionRet =  new BinaryExpression(_localctx.multiplicativeExpressionRet, ((MultiplicativeExpressionContext)_localctx).pu.preUnaryExpressionRet, (((MultiplicativeExpressionContext)_localctx).op!=null?((MultiplicativeExpressionContext)_localctx).op.getText():null) == "*" ? BinaryOperator.mult : BinaryOperator.div);
+				((MultiplicativeExpressionContext)_localctx).multiplicativeExpressionRet =  new BinaryExpression(_localctx.multiplicativeExpressionRet, ((MultiplicativeExpressionContext)_localctx).pu.preUnaryExpressionRet, (((MultiplicativeExpressionContext)_localctx).op!=null?((MultiplicativeExpressionContext)_localctx).op.getText():null).equals("*") ? BinaryOperator.mult : BinaryOperator.div);
 				    _localctx.multiplicativeExpressionRet.setLine(((MultiplicativeExpressionContext)_localctx).op.getLine());
 				}
 				}
@@ -3277,7 +3284,7 @@ public class CmmParser extends Parser {
 				setState(589);
 				((PreUnaryExpressionContext)_localctx).pe = preUnaryExpression();
 				}
-				((PreUnaryExpressionContext)_localctx).preUnaryExpressionRet =  new UnaryExpression(((PreUnaryExpressionContext)_localctx).pe.preUnaryExpressionRet, (((PreUnaryExpressionContext)_localctx).op!=null?((PreUnaryExpressionContext)_localctx).op.getText():null) == "-" ? UnaryOperator.minus : UnaryOperator.not);
+				((PreUnaryExpressionContext)_localctx).preUnaryExpressionRet =  new UnaryExpression(((PreUnaryExpressionContext)_localctx).pe.preUnaryExpressionRet, (((PreUnaryExpressionContext)_localctx).op!=null?((PreUnaryExpressionContext)_localctx).op.getText():null).equals("-") ? UnaryOperator.minus : UnaryOperator.not);
 				    _localctx.preUnaryExpressionRet.setLine(((PreUnaryExpressionContext)_localctx).op.getLine());
 				}
 				break;
@@ -3313,31 +3320,26 @@ public class CmmParser extends Parser {
 	public static class AccessExpressionContext extends ParserRuleContext {
 		public Expression accessExpressionRet;
 		public OtherExpressionContext oe;
+		public Token lp;
 		public FunctionArgumentsContext fa;
+		public Token dt;
 		public IdentifierContext id;
+		public Token lb;
 		public ExpressionContext e;
 		public OtherExpressionContext otherExpression() {
 			return getRuleContext(OtherExpressionContext.class,0);
-		}
-		public List<TerminalNode> LPAR() { return getTokens(CmmParser.LPAR); }
-		public TerminalNode LPAR(int i) {
-			return getToken(CmmParser.LPAR, i);
 		}
 		public List<TerminalNode> RPAR() { return getTokens(CmmParser.RPAR); }
 		public TerminalNode RPAR(int i) {
 			return getToken(CmmParser.RPAR, i);
 		}
-		public List<TerminalNode> DOT() { return getTokens(CmmParser.DOT); }
-		public TerminalNode DOT(int i) {
-			return getToken(CmmParser.DOT, i);
-		}
-		public List<TerminalNode> LBRACK() { return getTokens(CmmParser.LBRACK); }
-		public TerminalNode LBRACK(int i) {
-			return getToken(CmmParser.LBRACK, i);
-		}
 		public List<TerminalNode> RBRACK() { return getTokens(CmmParser.RBRACK); }
 		public TerminalNode RBRACK(int i) {
 			return getToken(CmmParser.RBRACK, i);
+		}
+		public List<TerminalNode> LPAR() { return getTokens(CmmParser.LPAR); }
+		public TerminalNode LPAR(int i) {
+			return getToken(CmmParser.LPAR, i);
 		}
 		public List<FunctionArgumentsContext> functionArguments() {
 			return getRuleContexts(FunctionArgumentsContext.class);
@@ -3345,11 +3347,19 @@ public class CmmParser extends Parser {
 		public FunctionArgumentsContext functionArguments(int i) {
 			return getRuleContext(FunctionArgumentsContext.class,i);
 		}
+		public List<TerminalNode> DOT() { return getTokens(CmmParser.DOT); }
+		public TerminalNode DOT(int i) {
+			return getToken(CmmParser.DOT, i);
+		}
 		public List<IdentifierContext> identifier() {
 			return getRuleContexts(IdentifierContext.class);
 		}
 		public IdentifierContext identifier(int i) {
 			return getRuleContext(IdentifierContext.class,i);
+		}
+		public List<TerminalNode> LBRACK() { return getTokens(CmmParser.LBRACK); }
+		public TerminalNode LBRACK(int i) {
+			return getToken(CmmParser.LBRACK, i);
 		}
 		public List<ExpressionContext> expression() {
 			return getRuleContexts(ExpressionContext.class);
@@ -3400,12 +3410,13 @@ public class CmmParser extends Parser {
 						{
 						{
 						setState(600);
-						match(LPAR);
+						((AccessExpressionContext)_localctx).lp = match(LPAR);
 						setState(601);
 						((AccessExpressionContext)_localctx).fa = functionArguments();
 						setState(602);
 						match(RPAR);
 						((AccessExpressionContext)_localctx).accessExpressionRet =  new FunctionCall(_localctx.accessExpressionRet, ((AccessExpressionContext)_localctx).fa.functionArgumentsRet);
+						        _localctx.accessExpressionRet.setLine(((AccessExpressionContext)_localctx).lp.getLine());
 						}
 						}
 						break;
@@ -3413,10 +3424,11 @@ public class CmmParser extends Parser {
 						{
 						{
 						setState(605);
-						match(DOT);
+						((AccessExpressionContext)_localctx).dt = match(DOT);
 						setState(606);
 						((AccessExpressionContext)_localctx).id = identifier();
 						((AccessExpressionContext)_localctx).accessExpressionRet =  new StructAccess(_localctx.accessExpressionRet, ((AccessExpressionContext)_localctx).id.identifierRet);
+						        _localctx.accessExpressionRet.setLine(((AccessExpressionContext)_localctx).dt.getLine());
 						}
 						}
 						break;
@@ -3441,12 +3453,13 @@ public class CmmParser extends Parser {
 					{
 					{
 					setState(614);
-					match(LBRACK);
+					((AccessExpressionContext)_localctx).lb = match(LBRACK);
 					setState(615);
 					((AccessExpressionContext)_localctx).e = expression();
 					setState(616);
 					match(RBRACK);
 					((AccessExpressionContext)_localctx).accessExpressionRet =  new ListAccessByIndex(_localctx.accessExpressionRet, ((AccessExpressionContext)_localctx).e.expressionRet);
+					        _localctx.accessExpressionRet.setLine(((AccessExpressionContext)_localctx).lb.getLine());
 					}
 					}
 					break;
@@ -3454,10 +3467,11 @@ public class CmmParser extends Parser {
 					{
 					{
 					setState(619);
-					match(DOT);
+					((AccessExpressionContext)_localctx).dt = match(DOT);
 					setState(620);
 					((AccessExpressionContext)_localctx).id = identifier();
 					((AccessExpressionContext)_localctx).accessExpressionRet =  new StructAccess(_localctx.accessExpressionRet, ((AccessExpressionContext)_localctx).id.identifierRet);
+					        _localctx.accessExpressionRet.setLine(((AccessExpressionContext)_localctx).dt.getLine());
 					}
 					}
 					break;

@@ -119,11 +119,13 @@ functionArgsDec returns[ArrayList<VariableDeclaration> variableDeclarationRet]:
     (t = type )
     (id = identifier )
     {VariableDeclaration arg1 = new VariableDeclaration($id.identifierRet,$t.typeRet);
+    arg1.setLine($id.identifierRet.getLine());
     $variableDeclarationRet.add(arg1);}
     (COMMA
     (t = type )
     (id = identifier )
     {VariableDeclaration arg = new VariableDeclaration($id.identifierRet,$t.typeRet);
+    arg.setLine($id.identifierRet.getLine());
     $variableDeclarationRet.add(arg);}
     )*
     )? RPAR ;
@@ -164,13 +166,15 @@ varDecStatement returns[VarDecStmt varDecStatementRet]:
     t = type id = identifier
     {VariableDeclaration var = new VariableDeclaration($id.identifierRet,$t.typeRet);
     int line = $id.identifierRet.getLine();
+    var.setLine(line);
+    $varDecStatementRet.addVar(var);
     $varDecStatementRet.setLine(line);}
-    (ASSIGN e = orExpression {var.setDefaultValue($e.orExpressionRet);
-                                 $varDecStatementRet.addVar(var);})?
-    (COMMA
-    id2 = identifier  {VariableDeclaration var2 = new VariableDeclaration($id2.identifierRet,$t.typeRet);}
-    (ASSIGN e2 = orExpression {var2.setDefaultValue($e2.orExpressionRet);
-                                  $varDecStatementRet.addVar(var2);})?
+    (ASSIGN e = orExpression {var.setDefaultValue($e.orExpressionRet);})?
+    (c=COMMA
+    id2 = identifier  {VariableDeclaration var2 = new VariableDeclaration($id2.identifierRet,$t.typeRet);
+        var2.setLine($c.getLine());
+        $varDecStatementRet.addVar(var2);}
+    (ASSIGN e2 = orExpression {var2.setDefaultValue($e2.orExpressionRet);})?
     )*;
 
 //todo ?
@@ -181,8 +185,10 @@ functionCallStmt returns [FunctionCallStmt functionCallStmtRet] :
                                              instanceExpression.setLine($lp.getLine());})
         | (d = DOT id = identifier {instanceExpression = new StructAccess(instanceExpression, $id.identifierRet);
                                     instanceExpression.setLine($d.getLine());}))*
-    (l = LPAR fa = functionArguments RPAR {$functionCallStmtRet = new FunctionCallStmt(new FunctionCall(instanceExpression, $fa.functionArgumentsRet));
-                                           $functionCallStmtRet.setLine($l.getLine());});
+    (l = LPAR fa = functionArguments RPAR { FunctionCall call = new FunctionCall(instanceExpression, $fa.functionArgumentsRet);
+       call.setLine($l.getLine());
+       $functionCallStmtRet = new FunctionCallStmt(call);
+       $functionCallStmtRet.setLine($l.getLine());});
 
 //todo - done
 returnStatement returns [ReturnStmt returnStatementRet]:
@@ -309,7 +315,7 @@ relationalExpression returns [Expression relationalExpressionRet]:
     ae = additiveExpression
     {$relationalExpressionRet = $ae.additiveExpressionRet;}
     ((op = GREATER_THAN | op = LESS_THAN) ae = additiveExpression
-    {$relationalExpressionRet = new BinaryExpression($relationalExpressionRet, $ae.additiveExpressionRet, $op.text == "<" ? BinaryOperator.lt : BinaryOperator.gt);
+    {$relationalExpressionRet = new BinaryExpression($relationalExpressionRet, $ae.additiveExpressionRet, $op.text.equals("<") ? BinaryOperator.lt : BinaryOperator.gt);
     $relationalExpressionRet.setLine($op.getLine());})*;
 
 //todo - done?
@@ -317,7 +323,7 @@ additiveExpression returns [Expression additiveExpressionRet]:
     me = multiplicativeExpression
     {$additiveExpressionRet = $me.multiplicativeExpressionRet;}
     ((op = PLUS | op = MINUS) me = multiplicativeExpression
-    {$additiveExpressionRet = new BinaryExpression($additiveExpressionRet, $me.multiplicativeExpressionRet, $op.text == "+" ? BinaryOperator.add : BinaryOperator.sub);
+    {$additiveExpressionRet = new BinaryExpression($additiveExpressionRet, $me.multiplicativeExpressionRet, $op.text.equals("+") ? BinaryOperator.add : BinaryOperator.sub);
     $additiveExpressionRet.setLine($op.getLine());})*;
 
 //todo - done?
@@ -325,13 +331,13 @@ multiplicativeExpression returns [Expression multiplicativeExpressionRet]:
     pu = preUnaryExpression
     {$multiplicativeExpressionRet = $pu.preUnaryExpressionRet;}
     ((op = MULT | op = DIVIDE) pu = preUnaryExpression
-    {$multiplicativeExpressionRet = new BinaryExpression($multiplicativeExpressionRet, $pu.preUnaryExpressionRet, $op.text == "*" ? BinaryOperator.mult : BinaryOperator.div);
+    {$multiplicativeExpressionRet = new BinaryExpression($multiplicativeExpressionRet, $pu.preUnaryExpressionRet, $op.text.equals("*") ? BinaryOperator.mult : BinaryOperator.div);
     $multiplicativeExpressionRet.setLine($op.getLine());})*;
 
 //todo - done?
 preUnaryExpression returns [Expression preUnaryExpressionRet]:
     ((op = NOT | op = MINUS) pe = preUnaryExpression )
-    {$preUnaryExpressionRet = new UnaryExpression($pe.preUnaryExpressionRet, $op.text == "-" ? UnaryOperator.minus : UnaryOperator.not);
+    {$preUnaryExpressionRet = new UnaryExpression($pe.preUnaryExpressionRet, $op.text.equals("-") ? UnaryOperator.minus : UnaryOperator.not);
     $preUnaryExpressionRet.setLine($op.getLine());}
     | ae = accessExpression {$preUnaryExpressionRet = $ae.accessExpressionRet;};
 
@@ -339,10 +345,14 @@ preUnaryExpression returns [Expression preUnaryExpressionRet]:
 accessExpression returns [Expression accessExpressionRet]:
     oe = otherExpression
     {$accessExpressionRet = $oe.otherExpressionRet;}
-    ((LPAR fa = functionArguments RPAR {$accessExpressionRet = new FunctionCall($accessExpressionRet, $fa.functionArgumentsRet);})
-        | (DOT id=identifier {$accessExpressionRet = new StructAccess($accessExpressionRet, $id.identifierRet);}) )*
-    ((LBRACK e = expression RBRACK {$accessExpressionRet = new ListAccessByIndex($accessExpressionRet, $e.expressionRet);})
-        | (DOT id=identifier {$accessExpressionRet = new StructAccess($accessExpressionRet, $id.identifierRet);}))*;
+    ((lp = LPAR fa = functionArguments RPAR {$accessExpressionRet = new FunctionCall($accessExpressionRet, $fa.functionArgumentsRet);
+        $accessExpressionRet.setLine($lp.getLine());})
+        | (dt=DOT id=identifier {$accessExpressionRet = new StructAccess($accessExpressionRet, $id.identifierRet);
+        $accessExpressionRet.setLine($dt.getLine());}))*
+    ((lb=LBRACK e = expression RBRACK {$accessExpressionRet = new ListAccessByIndex($accessExpressionRet, $e.expressionRet);
+        $accessExpressionRet.setLine($lb.getLine());})
+        | (dt=DOT id=identifier {$accessExpressionRet = new StructAccess($accessExpressionRet, $id.identifierRet);
+        $accessExpressionRet.setLine($dt.getLine());}))*;
 
 //todo - done
 otherExpression returns[Expression otherExpressionRet]:
