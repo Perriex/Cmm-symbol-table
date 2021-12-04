@@ -379,7 +379,7 @@ type returns[Type typeRet]:
     STRUCT id = identifier {$typeRet = new StructType($id.identifierRet);}|
     f = fptrType {$typeRet = $f.fptrTypeRet;};
 
-//todo
+//todo ?
 fptrType returns [FptrType fptrTypeRet]:
     FPTR LESS_THAN (t = VOID | ( type (COMMA type)*)) ARROW (type | VOID)
     {}
