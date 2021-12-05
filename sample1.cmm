@@ -8,10 +8,12 @@ struct st begin
         get
             return a
     end
+        struct st2 asf;
 end
 
-struct st begin
+struct st2 begin
     int a;
+        struct st asf;
     list #int a
 end
 

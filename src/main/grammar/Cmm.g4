@@ -410,9 +410,9 @@ identifier returns[Identifier identifierRet]:
 
 //todo - done
 type returns[Type typeRet]:
-    INT {$typeRet = new IntType();} | BOOL {$typeRet = new BoolType();}|
+    INT {$typeRet = new IntType();} | BOOL {$typeRet = new BoolType();} |
     LIST SHARP t = type {$typeRet = new ListType($t.typeRet);} |
-    STRUCT id = identifier {$typeRet = new StructType($id.identifierRet);}|
+    STRUCT id = identifier {$typeRet = new StructType($id.identifierRet);} |
     f = fptrType {$typeRet = $f.fptrTypeRet;};
 
 //todo - done

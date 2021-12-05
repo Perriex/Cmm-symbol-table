@@ -19,10 +19,14 @@ import main.symbolTable.items.VariableSymbolTableItem;
 import main.symbolTable.utils.Stack;
 import main.visitor.Visitor;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class ErrorVisitor extends Visitor<Void> {
     public Boolean NoError = true;
+    public String topStruct = "";// add
+    public Map<String, Integer> numDecs = new HashMap<>();// add
 
     public void errorPrinter(CompileError error) {
         System.out.println(error.getMessage());
@@ -34,11 +38,12 @@ public class ErrorVisitor extends Visitor<Void> {
         SymbolTable.root = new SymbolTable();
         SymbolTable.push(SymbolTable.root);
 
+        numDecs.put("1234check",1);
         for (StructDeclaration struct : program.getStructs()) {
             var structItem = new StructSymbolTableItem(struct);
             SymbolTable.push(new SymbolTable(SymbolTable.root));
             structItem.setStructSymbolTable(SymbolTable.top);
-
+            topStruct = struct.getStructName().getName(); // add
             try {
                 SymbolTable.root.put(structItem);
             } catch (ItemAlreadyExistsException e) {
@@ -53,7 +58,7 @@ public class ErrorVisitor extends Visitor<Void> {
             struct.accept(this);
             SymbolTable.pop();
         }
-
+        numDecs.put("1234check",0);
         for (FunctionDeclaration function : program.getFunctions()) {
             function.accept(this);
         }
@@ -110,6 +115,22 @@ public class ErrorVisitor extends Visitor<Void> {
 
     @Override
     public Void visit(VariableDeclaration variableDeclaration) {
+        if(numDecs.get("1234check") == 1) {//added
+            if (variableDeclaration.getVarType().toString().equals("StructType_" + topStruct)) { // for itself
+                errorPrinter(new CyclicDependency(variableDeclaration.getLine(), topStruct));
+            }
+            String[] arrOfStr = variableDeclaration.getVarType().toString().split("_", 2);
+            if(arrOfStr.length > 1) {
+                if (numDecs.containsKey(topStruct + "-" + arrOfStr[1])) { // for other struct
+                    errorPrinter(new CyclicDependency(variableDeclaration.getLine(), topStruct));
+                    errorPrinter(new CyclicDependency(numDecs.get(topStruct + "-" + arrOfStr[1]), arrOfStr[1]));
+                }
+                if(variableDeclaration.getVarType().toString().equals("StructType_"+arrOfStr[1])){// add in map
+                    numDecs.put(arrOfStr[1]+"-"+topStruct,variableDeclaration.getLine());
+                }
+            }
+        }
+
         var varItem = new VariableSymbolTableItem(variableDeclaration.getVarName());
         try {
             SymbolTable.top.getItem(StructSymbolTableItem.START_KEY+varItem.getName());
