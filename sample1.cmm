@@ -1,12 +1,14 @@
 struct a begin
-    struct f B
+    struct b B
 end
 
-struct f
-    struct a A
+struct b
+    struct a dw
 
-struct c
-    struct a A
+struct d
+    struct a dq
+
+
 
 main() begin
     list #int temp

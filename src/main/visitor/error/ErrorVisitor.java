@@ -39,7 +39,6 @@ public class ErrorVisitor extends Visitor<Void> {
     public String topStruct = "";// add
     public int line = 0;// add
     public Map<String, ArrayList<StructInfo>> numDecs = new HashMap<>();// add
-    public ArrayList<String> hasPrint = new ArrayList<>();// add
     public void errorPrinter(CompileError error) {
         System.out.println(error.getMessage());
         NoError = false;
@@ -130,15 +129,13 @@ public class ErrorVisitor extends Visitor<Void> {
         if(numDecs.containsKey(name)){
             for (StructInfo s : numDecs.get(name)) {
                 String parent = s.StructParentName;
-                if(hasPrint.contains(parent))
-                    return true;
-                if (target.equals(parent) ) {
+                if (target.equals(parent)) {
+                    errorPrinter(new CyclicDependency(s.Line, parent));
                     return true;
                 } else {
                     if (backTrack(parent, target)) {
-                        if(!hasPrint.contains(topStruct))
-                            errorPrinter(new CyclicDependency(s.Line, parent));
-                        hasPrint.add(parent);
+                        errorPrinter(new CyclicDependency(s.Line, parent));
+                        return true;
                     }
                 }
             }
@@ -152,7 +149,6 @@ public class ErrorVisitor extends Visitor<Void> {
                 String name = variableDeclaration.getVarType().toString().split("_",2)[1];
                 if (topStruct.equals(name)) {
                     errorPrinter(new CyclicDependency(line, topStruct));
-                    hasPrint.add(topStruct);
                 } else {
                     if (numDecs.containsKey(name)) {
                         ArrayList<StructInfo> temp = numDecs.get(name);
@@ -162,11 +158,7 @@ public class ErrorVisitor extends Visitor<Void> {
                         temp.add(new StructInfo(line, topStruct));
                         numDecs.put(name, temp);
                     }
-                    if(backTrack(name,topStruct)){
-                        if(!hasPrint.contains(topStruct))
-                            errorPrinter(new CyclicDependency(line, topStruct));
-                        hasPrint.add(topStruct);
-                    }
+                    backTrack(name,name);
                 }
             }
         }
