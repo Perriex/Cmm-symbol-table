@@ -39,6 +39,8 @@ public class ErrorVisitor extends Visitor<Void> {
     public String topStruct = "";// add
     public int line = 0;// add
     public Map<String, ArrayList<StructInfo>> numDecs = new HashMap<>();// add
+    public Map<String, Integer> printed = new HashMap<>();
+
     public void errorPrinter(CompileError error) {
         System.out.println(error.getMessage());
         NoError = false;
@@ -69,6 +71,9 @@ public class ErrorVisitor extends Visitor<Void> {
             }
             struct.accept(this);
             SymbolTable.pop();
+        }
+        for (var entry : printed.entrySet()) {
+            errorPrinter(new CyclicDependency(entry.getValue(), entry.getKey()));
         }
         check = false;
         for (FunctionDeclaration function : program.getFunctions()) {
@@ -130,11 +135,11 @@ public class ErrorVisitor extends Visitor<Void> {
             for (StructInfo s : numDecs.get(name)) {
                 String parent = s.StructParentName;
                 if (target.equals(parent)) {
-                    errorPrinter(new CyclicDependency(s.Line, parent));
+                    printed.put(parent,s.Line);
                     return true;
                 } else {
                     if (backTrack(parent, target)) {
-                        errorPrinter(new CyclicDependency(s.Line, parent));
+                        printed.put(parent,s.Line);
                         return true;
                     }
                 }
@@ -148,7 +153,8 @@ public class ErrorVisitor extends Visitor<Void> {
             if (variableDeclaration.getVarType().toString().matches("StructType_.*")) {
                 String name = variableDeclaration.getVarType().toString().split("_",2)[1];
                 if (topStruct.equals(name)) {
-                    errorPrinter(new CyclicDependency(line, topStruct));
+                    //errorPrinter(new CyclicDependency(line, topStruct));
+                    printed.put(topStruct,line);
                 } else {
                     if (numDecs.containsKey(name)) {
                         ArrayList<StructInfo> temp = numDecs.get(name);

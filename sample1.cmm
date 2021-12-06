@@ -1,19 +1,13 @@
-struct a begin
-    struct b B
+struct A begin
+    struct B b;
+    struct D d
 end
 
-struct b
-    struct a dw
-
-struct d
-    struct a dq
+struct B
+    struct C c
 
 
 
 main() begin
-    list #int temp
-    int a = 9
-    append(temp, 1)
-    append(temp, 2 / a)
-    f1(temp)
+    return 2
 end
