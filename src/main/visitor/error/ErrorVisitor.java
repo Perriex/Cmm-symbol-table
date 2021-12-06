@@ -16,13 +16,30 @@ import main.symbolTable.exceptions.ItemNotFoundException;
 import main.symbolTable.items.FunctionSymbolTableItem;
 import main.symbolTable.items.StructSymbolTableItem;
 import main.symbolTable.items.VariableSymbolTableItem;
-import main.symbolTable.utils.Stack;
 import main.visitor.Visitor;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class ErrorVisitor extends Visitor<Void> {
+
+    public class StructInfo
+    {
+        public String StructParentName;
+        public int Line;
+        public StructInfo(int line, String name) {
+            StructParentName = name;
+            Line = line;
+        }
+    }
+
     public Boolean NoError = true;
+    public Boolean check = false;
+    public String topStruct = "";// add
+    public int line = 0;// add
+    public Map<String, ArrayList<StructInfo>> numDecs = new HashMap<>();// add
+    public Map<String, Integer> printed = new HashMap<>();
 
     public void errorPrinter(CompileError error) {
         System.out.println(error.getMessage());
@@ -34,11 +51,13 @@ public class ErrorVisitor extends Visitor<Void> {
         SymbolTable.root = new SymbolTable();
         SymbolTable.push(SymbolTable.root);
 
+        check= true;
         for (StructDeclaration struct : program.getStructs()) {
             var structItem = new StructSymbolTableItem(struct);
             SymbolTable.push(new SymbolTable(SymbolTable.root));
             structItem.setStructSymbolTable(SymbolTable.top);
-
+            topStruct = struct.getStructName().getName(); // add
+            line = struct.getLine();
             try {
                 SymbolTable.root.put(structItem);
             } catch (ItemAlreadyExistsException e) {
@@ -53,7 +72,10 @@ public class ErrorVisitor extends Visitor<Void> {
             struct.accept(this);
             SymbolTable.pop();
         }
-
+        for (var entry : printed.entrySet()) {
+            errorPrinter(new CyclicDependency(entry.getValue(), entry.getKey()));
+        }
+        check = false;
         for (FunctionDeclaration function : program.getFunctions()) {
             function.accept(this);
         }
@@ -108,8 +130,45 @@ public class ErrorVisitor extends Visitor<Void> {
         return super.visit(varDecStmt);
     }
 
+    public Boolean backTrack(String name,String target){
+        if(numDecs.containsKey(name)){
+            for (StructInfo s : numDecs.get(name)) {
+                String parent = s.StructParentName;
+                if (target.equals(parent)) {
+                    printed.put(parent,s.Line);
+                    return true;
+                } else {
+                    if (backTrack(parent, target)) {
+                        printed.put(parent,s.Line);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
     @Override
     public Void visit(VariableDeclaration variableDeclaration) {
+        if(check) {//added
+            if (variableDeclaration.getVarType().toString().matches("StructType_.*")) {
+                String name = variableDeclaration.getVarType().toString().split("_",2)[1];
+                if (topStruct.equals(name)) {
+                    //errorPrinter(new CyclicDependency(line, topStruct));
+                    printed.put(topStruct,line);
+                } else {
+                    if (numDecs.containsKey(name)) {
+                        ArrayList<StructInfo> temp = numDecs.get(name);
+                        temp.add(new StructInfo(line, topStruct));
+                    } else {
+                        ArrayList<StructInfo> temp = new ArrayList<>();
+                        temp.add(new StructInfo(line, topStruct));
+                        numDecs.put(name, temp);
+                    }
+                    backTrack(name,name);
+                }
+            }
+        }
+
         var varItem = new VariableSymbolTableItem(variableDeclaration.getVarName());
         try {
             SymbolTable.top.getItem(StructSymbolTableItem.START_KEY+varItem.getName());
