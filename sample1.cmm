@@ -1,4 +1,5 @@
 struct a begin
+    struct a A
     struct b B
 end
 
@@ -6,6 +7,9 @@ struct b
     struct c C
 
 struct c
+    struct d D
+
+struct d
     struct a A
 
 main() begin

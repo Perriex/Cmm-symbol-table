@@ -154,11 +154,13 @@ public class ErrorVisitor extends Visitor<Void> {
                         ArrayList<StructInfo> temp = numDecs.get(name);
                         temp.add(new StructInfo(variableDeclaration.getLine(), topStruct));
                     } else {
-                        ArrayList<StructInfo> temp = new ArrayList<StructInfo>();
+                        ArrayList<StructInfo> temp = new ArrayList<>();
                         temp.add(new StructInfo(variableDeclaration.getLine(), topStruct));
                         numDecs.put(name, temp);
                     }
-                    backTrack(name,name);
+                    if(backTrack(name,topStruct)){
+                        errorPrinter(new CyclicDependency(variableDeclaration.getLine(), topStruct));
+                    }
                 }
             }
         }
