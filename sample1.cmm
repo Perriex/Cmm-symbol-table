@@ -1,13 +1,3 @@
-struct A begin
-    struct B b;
-    struct D d
-end
-
-struct B
-    struct C c
-
-
-
 main() begin
-    return 2
+    return 2 + 2 - 4 - 5
 end

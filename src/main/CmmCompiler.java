@@ -2,7 +2,7 @@ package main;
 
 import main.visitor.error.ErrorVisitor;
 import main.visitor.name.ASTTreePrinter;
-import main.grammar.*;
+import parsers.*;
 import main.ast.nodes.Program;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;

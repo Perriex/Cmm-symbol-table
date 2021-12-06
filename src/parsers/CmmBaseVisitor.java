@@ -1,19 +1,7 @@
-// Generated from D:/University/TA_Lessons/Compiler-1400-Fall/Phase2/src/main/grammar\Cmm.g4 by ANTLR 4.9.1
+// Generated from D:/UT/Term 5/Compiler/Ca/CA2/Phase2/Phase2/src/main/grammar\Cmm.g4 by ANTLR 4.9.2
 package parsers;
 
-     import main.ast.nodes.*;
-     import main.ast.nodes.declaration.*;
-     import main.ast.nodes.declaration.struct.*;
-     import main.ast.nodes.expression.*;
-     import main.ast.nodes.expression.operators.*;
-     import main.ast.nodes.expression.values.*;
-     import main.ast.nodes.expression.values.primitive.*;
-     import main.ast.nodes.statement.*;
-     import main.ast.types.*;
-     import main.ast.types.primitives.*;
-     import java.util.*;
- 
-import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
+     import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**
  * This class provides an empty implementation of {@link CmmVisitor},
