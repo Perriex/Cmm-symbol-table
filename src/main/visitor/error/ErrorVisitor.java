@@ -16,10 +16,7 @@ import main.symbolTable.exceptions.ItemNotFoundException;
 import main.symbolTable.items.FunctionSymbolTableItem;
 import main.symbolTable.items.StructSymbolTableItem;
 import main.symbolTable.items.VariableSymbolTableItem;
-import main.symbolTable.utils.Stack;
 import main.visitor.Visitor;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,8 +37,9 @@ public class ErrorVisitor extends Visitor<Void> {
     public Boolean NoError = true;
     public Boolean check = false;
     public String topStruct = "";// add
+    public int line = 0;// add
     public Map<String, ArrayList<StructInfo>> numDecs = new HashMap<>();// add
-
+    public ArrayList<String> hasPrint = new ArrayList<>();// add
     public void errorPrinter(CompileError error) {
         System.out.println(error.getMessage());
         NoError = false;
@@ -58,6 +56,7 @@ public class ErrorVisitor extends Visitor<Void> {
             SymbolTable.push(new SymbolTable(SymbolTable.root));
             structItem.setStructSymbolTable(SymbolTable.top);
             topStruct = struct.getStructName().getName(); // add
+            line = struct.getLine();
             try {
                 SymbolTable.root.put(structItem);
             } catch (ItemAlreadyExistsException e) {
@@ -131,11 +130,15 @@ public class ErrorVisitor extends Visitor<Void> {
         if(numDecs.containsKey(name)){
             for (StructInfo s : numDecs.get(name)) {
                 String parent = s.StructParentName;
-                if (target.equals(parent)) {
+                if(hasPrint.contains(parent))
+                    return true;
+                if (target.equals(parent) ) {
                     return true;
                 } else {
                     if (backTrack(parent, target)) {
-                        errorPrinter(new CyclicDependency(s.Line, parent));
+                        if(!hasPrint.contains(topStruct))
+                            errorPrinter(new CyclicDependency(s.Line, parent));
+                        hasPrint.add(parent);
                     }
                 }
             }
@@ -148,18 +151,21 @@ public class ErrorVisitor extends Visitor<Void> {
             if (variableDeclaration.getVarType().toString().matches("StructType_.*")) {
                 String name = variableDeclaration.getVarType().toString().split("_",2)[1];
                 if (topStruct.equals(name)) {
-                    errorPrinter(new CyclicDependency(variableDeclaration.getLine(), name));
+                    errorPrinter(new CyclicDependency(line, topStruct));
+                    hasPrint.add(topStruct);
                 } else {
                     if (numDecs.containsKey(name)) {
                         ArrayList<StructInfo> temp = numDecs.get(name);
-                        temp.add(new StructInfo(variableDeclaration.getLine(), topStruct));
+                        temp.add(new StructInfo(line, topStruct));
                     } else {
                         ArrayList<StructInfo> temp = new ArrayList<>();
-                        temp.add(new StructInfo(variableDeclaration.getLine(), topStruct));
+                        temp.add(new StructInfo(line, topStruct));
                         numDecs.put(name, temp);
                     }
                     if(backTrack(name,topStruct)){
-                        errorPrinter(new CyclicDependency(variableDeclaration.getLine(), topStruct));
+                        if(!hasPrint.contains(topStruct))
+                            errorPrinter(new CyclicDependency(line, topStruct));
+                        hasPrint.add(topStruct);
                     }
                 }
             }

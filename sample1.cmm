@@ -1,23 +1,17 @@
 struct a begin
-    struct a A
-    struct b B
+    struct f B
 end
 
-struct b
-    struct c C
+struct f
+    struct a A
 
 struct c
-    struct d D
-
-struct d
     struct a A
 
 main() begin
-    bool a
-    int i = 0
-    while i < sz begin
-        while j < i
-            int newVar = 4
-    end
-    int newVar = 10
+    list #int temp
+    int a = 9
+    append(temp, 1)
+    append(temp, 2 / a)
+    f1(temp)
 end
