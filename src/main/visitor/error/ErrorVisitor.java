@@ -56,8 +56,6 @@ public class ErrorVisitor extends Visitor<Void> {
             var structItem = new StructSymbolTableItem(struct);
             SymbolTable.push(new SymbolTable(SymbolTable.root));
             structItem.setStructSymbolTable(SymbolTable.top);
-            topStruct = struct.getStructName().getName(); // add
-            line = struct.getLine();
             try {
                 SymbolTable.root.put(structItem);
             } catch (ItemAlreadyExistsException e) {
@@ -69,15 +67,35 @@ public class ErrorVisitor extends Visitor<Void> {
                     ex.printStackTrace();
                 }
             }
-            struct.accept(this);
+        }
+        check = false;
+        for (FunctionDeclaration function : program.getFunctions()) {
+            var funcItem = new FunctionSymbolTableItem(function);
+            SymbolTable.push(new SymbolTable(SymbolTable.top));
+            funcItem.setFunctionSymbolTable(SymbolTable.top);
+            try {
+                SymbolTable.top.pre.put(funcItem);
+            } catch (ItemAlreadyExistsException e) {
+                errorPrinter(new DuplicateFunction(function.getLine(), funcItem.getName()));
+                funcItem.setName(UUID.randomUUID().toString());
+                try {
+                    SymbolTable.top.pre.put(funcItem);
+                } catch (ItemAlreadyExistsException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        for(int i =program.getFunctions().size() - 1 ; i >-1; i-- ) {
+            program.getFunctions().get(i).accept(this);
+        }
+        for(int j=program.getStructs().size() - 1 ;j >-1; j-- ) {
+            topStruct = program.getStructs().get(j).getStructName().getName(); // add
+            line = program.getStructs().get(j).getLine();
+            program.getStructs().get(j).accept(this);
             SymbolTable.pop();
         }
         for (var entry : printed.entrySet()) {
             errorPrinter(new CyclicDependency(entry.getValue(), entry.getKey()));
-        }
-        check = false;
-        for (FunctionDeclaration function : program.getFunctions()) {
-            function.accept(this);
         }
         program.getMain().accept(this);
         return super.visit(program);
@@ -85,27 +103,6 @@ public class ErrorVisitor extends Visitor<Void> {
 
     @Override
     public Void visit(FunctionDeclaration functionDeclaration) {
-        var funcItem = new FunctionSymbolTableItem(functionDeclaration);
-        SymbolTable.push(new SymbolTable(SymbolTable.top));
-        funcItem.setFunctionSymbolTable(SymbolTable.top);
-
-        try {
-            SymbolTable.top.pre.getItem(StructSymbolTableItem.START_KEY + funcItem.getName());
-            errorPrinter(new FunctionStructConflict(functionDeclaration.getLine(), funcItem.getName()));
-        } catch (ItemNotFoundException ignored) {}
-
-        try {
-            SymbolTable.top.pre.put(funcItem);
-        } catch (ItemAlreadyExistsException e) {
-            errorPrinter(new DuplicateFunction(functionDeclaration.getLine(), funcItem.getName()));
-            funcItem.setName(UUID.randomUUID().toString());
-            try {
-                SymbolTable.top.pre.put(funcItem);
-            } catch (ItemAlreadyExistsException ex) {
-                ex.printStackTrace();
-            }
-        }
-
         for (VariableDeclaration arg : functionDeclaration.getArgs())
             arg.accept(this);
         functionDeclaration.getBody().accept(this);
@@ -119,6 +116,9 @@ public class ErrorVisitor extends Visitor<Void> {
         var functionDeclaration = new FunctionDeclaration();
         functionDeclaration.setBody(mainDeclaration.getBody());
         functionDeclaration.setFunctionName(new Identifier("main"));
+        var funcItem = new FunctionSymbolTableItem(functionDeclaration);
+        SymbolTable.push(new SymbolTable(SymbolTable.top));
+        funcItem.setFunctionSymbolTable(SymbolTable.top);
         return visit(functionDeclaration);
     }
 
@@ -238,7 +238,8 @@ public class ErrorVisitor extends Visitor<Void> {
         conditionalStmt.getThenBody().accept(this);
         SymbolTable.pop();
         SymbolTable.push(new SymbolTable(SymbolTable.top));
-        conditionalStmt.getElseBody().accept(this);
+        if(conditionalStmt.getElseBody() != null)
+            conditionalStmt.getElseBody().accept(this);
         SymbolTable.pop();
 
         return super.visit(conditionalStmt);
