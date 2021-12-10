@@ -1,37 +1,41 @@
-struct st begin
-    int a, b;
-    bool a (int arg1, int arg1) begin
-        set begin
-            int b;
-            a = b;
-        end
+struct std begin
+    struct st new
+    bool new (int f) begin
+        set
+            return
         get
-            return a
+            return
     end
+
+    int new
 end
 
-struct st begin
-    int a;
-    list #int a
+struct std begin
+    int f
+    int f(int f) begin
+        set
+            return
+        get
+            return
+    end
+
 end
 
-void st(int a, bool a, int b) begin
-    int b, c;
-    if true begin
-        int c = 10
-        int t = 4
-    end
-    else
-        int t = 3
+int f(int f, int f, bool std, bool std) begin
+    int f
+    bool std
 end
+
+bool f(bool std) begin
+    int f
+end
+
+void std(int std)
+    int f, std
 
 main() begin
-    bool st
-    int i = 0
-    while i < sz begin
-        int newVar
-        while j < i
-            int newVar = 4
-    end
-    int newVar = 10
+    int f
+    int f
+    int std
+    int std
 end

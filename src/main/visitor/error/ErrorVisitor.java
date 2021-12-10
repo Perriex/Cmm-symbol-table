@@ -71,7 +71,7 @@ public class ErrorVisitor extends Visitor<Void> {
         check = false;
         for (FunctionDeclaration function : program.getFunctions()) {
             var funcItem = new FunctionSymbolTableItem(function);
-            SymbolTable.push(new SymbolTable(SymbolTable.top));
+            SymbolTable.push(new SymbolTable(SymbolTable.root));
             funcItem.setFunctionSymbolTable(SymbolTable.top);
             try {
                 SymbolTable.top.pre.put(funcItem);
@@ -103,6 +103,12 @@ public class ErrorVisitor extends Visitor<Void> {
 
     @Override
     public Void visit(FunctionDeclaration functionDeclaration) {
+        var funcItem = new FunctionSymbolTableItem(functionDeclaration);
+        try {
+            SymbolTable.top.pre.getItem(StructSymbolTableItem.START_KEY + funcItem.getName());
+            errorPrinter(new FunctionStructConflict(functionDeclaration.getLine(), funcItem.getName()));
+        } catch (ItemNotFoundException ignored) {}
+
         for (VariableDeclaration arg : functionDeclaration.getArgs())
             arg.accept(this);
         functionDeclaration.getBody().accept(this);
@@ -117,7 +123,7 @@ public class ErrorVisitor extends Visitor<Void> {
         functionDeclaration.setBody(mainDeclaration.getBody());
         functionDeclaration.setFunctionName(new Identifier("main"));
         var funcItem = new FunctionSymbolTableItem(functionDeclaration);
-        SymbolTable.push(new SymbolTable(SymbolTable.top));
+        SymbolTable.push(new SymbolTable(SymbolTable.root));
         funcItem.setFunctionSymbolTable(SymbolTable.top);
         return visit(functionDeclaration);
     }
@@ -207,7 +213,7 @@ public class ErrorVisitor extends Visitor<Void> {
         var item = new VariableSymbolTableItem(setGetVarDeclaration.getVarName());
         item.setType(setGetVarDeclaration.getVarType());
         try {
-            SymbolTable.root.getItem(StructSymbolTableItem.START_KEY + setGetVarDeclaration.getVarName().getName());
+            SymbolTable.top.getItem(StructSymbolTableItem.START_KEY + setGetVarDeclaration.getVarName().getName());
             errorPrinter(new VarStructConflict(setGetVarDeclaration.getLine(), setGetVarDeclaration.getVarName().getName()));
         } catch (ItemNotFoundException ignored) {}
 
