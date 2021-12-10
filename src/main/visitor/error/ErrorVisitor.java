@@ -218,6 +218,11 @@ public class ErrorVisitor extends Visitor<Void> {
         } catch (ItemNotFoundException ignored) {}
 
         try {
+            SymbolTable.top.getItem(FunctionSymbolTableItem.START_KEY + setGetVarDeclaration.getVarName().getName());
+            errorPrinter(new VarStructConflict(setGetVarDeclaration.getLine(), setGetVarDeclaration.getVarName().getName()));
+        } catch (ItemNotFoundException ignored) {}
+
+        try {
             SymbolTable.top.put(item);
         } catch (ItemAlreadyExistsException ex) {
             errorPrinter(new DuplicateVar(setGetVarDeclaration.getLine(), setGetVarDeclaration.getVarName().getName()));
